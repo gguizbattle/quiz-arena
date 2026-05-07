@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -83,7 +83,7 @@ class LeaderboardScreen extends StatelessWidget {
           width: 80,
           height: height * 0.5,
           decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [color.withOpacity(0.6), color.withOpacity(0.2)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+            gradient: LinearGradient(colors: [color.withValues(alpha: 0.6), color.withValues(alpha: 0.2)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
         ),
@@ -96,7 +96,7 @@ class LeaderboardScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isMe ? AppColors.primary.withOpacity(0.15) : AppColors.card,
+        color: isMe ? AppColors.primary.withValues(alpha: 0.15) : AppColors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isMe ? AppColors.primary : const Color(0xFF2A2A40)),
       ),
@@ -127,3 +127,4 @@ class LeaderboardScreen extends StatelessWidget {
     ).animate().fadeIn(delay: Duration(milliseconds: 100 + index * 80)).slideX(begin: 0.1);
   }
 }
+

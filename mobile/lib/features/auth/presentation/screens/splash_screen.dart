@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -19,60 +19,155 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2800));
     if (mounted) context.go('/login');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.gradientBackground),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradientPrimary,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withOpacity(0.5),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.bolt, color: Colors.white, size: 56),
-              )
-                  .animate()
-                  .scale(duration: 600.ms, curve: Curves.elasticOut)
-                  .fadeIn(duration: 400.ms),
-              const SizedBox(height: 24),
-              Text('QUIZ ARENA', style: AppTextStyles.displayMedium.copyWith(letterSpacing: 4))
-                  .animate()
-                  .slideY(begin: 0.3, duration: 600.ms, delay: 300.ms, curve: Curves.easeOut)
-                  .fadeIn(duration: 600.ms, delay: 300.ms),
-              const SizedBox(height: 8),
-              Text('Compete. Learn. Win.', style: AppTextStyles.bodyMedium)
-                  .animate()
-                  .fadeIn(duration: 600.ms, delay: 600.ms),
-              const SizedBox(height: 60),
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  color: AppColors.primary,
-                  strokeWidth: 2,
-                ),
-              ).animate().fadeIn(duration: 400.ms, delay: 900.ms),
-            ],
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // Background glow effects
+          Positioned(
+            top: -100,
+            left: -100,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.primary.withValues(alpha: 0.08),
+              ),
+            ),
           ),
-        ),
+          Positioned(
+            bottom: -80,
+            right: -80,
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.cyan.withValues(alpha: 0.06),
+              ),
+            ),
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // GLIC Logo Icon
+                _GlicLogo()
+                    .animate()
+                    .scale(duration: 700.ms, curve: Curves.elasticOut)
+                    .fadeIn(duration: 500.ms),
+                const SizedBox(height: 28),
+                // App Name
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [AppColors.primary, AppColors.cyan],
+                  ).createShader(bounds),
+                  child: Text(
+                    'GLIC',
+                    style: AppTextStyles.displayLarge.copyWith(
+                      color: Colors.white,
+                      letterSpacing: 10,
+                      fontSize: 48,
+                    ),
+                  ),
+                )
+                    .animate()
+                    .slideY(begin: 0.4, duration: 600.ms, delay: 300.ms, curve: Curves.easeOut)
+                    .fadeIn(duration: 600.ms, delay: 300.ms),
+                const SizedBox(height: 8),
+                Text(
+                  'KNOW . PLAY . WIN',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    letterSpacing: 4,
+                    color: AppColors.textMuted,
+                    fontSize: 13,
+                  ),
+                )
+                    .animate()
+                    .fadeIn(duration: 600.ms, delay: 700.ms),
+                const SizedBox(height: 80),
+                // Loading dots
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (i) {
+                    return Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                        .animate(delay: Duration(milliseconds: 1000 + i * 150))
+                        .fadeIn(duration: 400.ms)
+                        .then()
+                        .fadeOut(duration: 400.ms)
+                        .animate(onPlay: (c) => c.repeat(reverse: true));
+                  }),
+                ).animate().fadeIn(duration: 400.ms, delay: 900.ms),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
+
+class _GlicLogo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 110,
+      height: 110,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF4A2ADB), Color(0xFF7B5CFF)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.5),
+            blurRadius: 40,
+            spreadRadius: 5,
+          ),
+          BoxShadow(
+            color: AppColors.cyan.withValues(alpha: 0.2),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Text(
+            'G',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.15),
+              fontSize: 90,
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+          const Positioned(
+            right: 18,
+            top: 18,
+            child: Icon(Icons.bolt, color: Colors.white, size: 42),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

@@ -18,7 +18,7 @@ class QuizArenaApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'Quiz Arena',
+      title: 'GLIC',
       theme: AppTheme.dark,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

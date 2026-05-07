@@ -12,14 +12,15 @@ class AppTheme {
         scaffoldBackgroundColor: AppColors.background,
         colorScheme: const ColorScheme.dark(
           primary: AppColors.primary,
-          secondary: AppColors.accent,
+          secondary: AppColors.cyan,
+          tertiary: AppColors.pink,
           surface: AppColors.surface,
           error: AppColors.error,
           onPrimary: Colors.white,
           onSecondary: Colors.black,
           onSurface: AppColors.textPrimary,
         ),
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.background,
           elevation: 0,
@@ -36,7 +37,7 @@ class AppTheme {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFF2A2A40), width: 1),
+            side: const BorderSide(color: Color(0xFF2A2A50), width: 1),
           ),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -69,14 +70,16 @@ class AppTheme {
           labelStyle: const TextStyle(color: AppColors.textSecondary),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Color(0xFF0F1020),
           selectedItemColor: AppColors.primary,
           unselectedItemColor: AppColors.textMuted,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: TextStyle(fontSize: 11),
         ),
         dividerTheme: const DividerThemeData(
-          color: Color(0xFF2A2A40),
+          color: Color(0xFF2A2A50),
           thickness: 1,
         ),
         pageTransitionsTheme: const PageTransitionsTheme(

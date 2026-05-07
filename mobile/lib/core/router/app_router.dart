@@ -9,6 +9,10 @@ import '../../features/quiz/presentation/screens/solo_quiz_screen.dart';
 import '../../features/battle/presentation/screens/battle_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
+import '../../features/tournaments/presentation/screens/tournaments_screen.dart';
+import '../../features/shop/presentation/screens/shop_screen.dart';
+import '../../features/friends/presentation/screens/friends_screen.dart';
+import '../theme/app_colors.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -17,12 +21,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      // Full-screen game routes (no bottom nav)
+      GoRoute(path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
+      GoRoute(path: '/battle', builder: (_, __) => const BattleScreen()),
+      // Main shell with bottom nav
       ShellRoute(
-        builder: (context, state, child) => MainShell(child: child),
+        builder: (context, state, child) => MainShell(location: state.matchedLocation, child: child),
         routes: [
           GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
-          GoRoute(path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
-          GoRoute(path: '/battle', builder: (_, __) => const BattleScreen()),
+          GoRoute(path: '/tournaments', builder: (_, __) => const TournamentsScreen()),
+          GoRoute(path: '/shop', builder: (_, __) => const ShopScreen()),
+          GoRoute(path: '/friends', builder: (_, __) => const FriendsScreen()),
           GoRoute(path: '/leaderboard', builder: (_, __) => const LeaderboardScreen()),
           GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
         ],
@@ -31,36 +40,66 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class MainShell extends StatefulWidget {
+class MainShell extends StatelessWidget {
   final Widget child;
-  const MainShell({super.key, required this.child});
+  final String location;
 
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
+  const MainShell({super.key, required this.child, required this.location});
 
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
+  static const _tabs = ['/home', '/tournaments', '/shop', '/friends', '/profile'];
 
-  final _tabs = ['/home', '/quiz', '/battle', '/leaderboard', '/profile'];
+  int get _currentIndex {
+    final idx = _tabs.indexOf(location);
+    return idx < 0 ? 0 : idx;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (i) {
-          setState(() => _currentIndex = i);
-          context.go(_tabs[i]);
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.quiz_rounded), label: 'Quiz'),
-          BottomNavigationBarItem(icon: Icon(Icons.sports_esports_rounded), label: 'Battle'),
-          BottomNavigationBarItem(icon: Icon(Icons.leaderboard_rounded), label: 'Rank'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'Profile'),
-        ],
+      body: child,
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F1020),
+          border: Border(top: BorderSide(color: Color(0xFF2A2A50), width: 1)),
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          onTap: (i) => context.go(_tabs[i]),
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textMuted,
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.emoji_events_outlined),
+              activeIcon: Icon(Icons.emoji_events_rounded),
+              label: 'Tournaments',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.storefront_outlined),
+              activeIcon: Icon(Icons.storefront_rounded),
+              label: 'Shop',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.people_outline_rounded),
+              activeIcon: Icon(Icons.people_rounded),
+              label: 'Friends',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline_rounded),
+              activeIcon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -56,8 +56,8 @@ class _BattleScreenState extends State<BattleScreen> {
       decoration: BoxDecoration(
         gradient: AppColors.gradientCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
-        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.15), blurRadius: 30)],
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.15), blurRadius: 30)],
       ),
       child: Column(
         children: [
@@ -70,7 +70,7 @@ class _BattleScreenState extends State<BattleScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.accentOrange.withOpacity(0.2),
+                      color: AppColors.accentOrange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: AppColors.accentOrange),
                     ),
@@ -109,7 +109,7 @@ class _BattleScreenState extends State<BattleScreen> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
             shape: BoxShape.circle,
             border: Border.all(color: color, width: 2),
           ),
@@ -154,7 +154,7 @@ class _BattleScreenState extends State<BattleScreen> {
           decoration: BoxDecoration(
             gradient: AppColors.gradientAccent,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: AppColors.accent.withOpacity(0.4), blurRadius: 15, offset: const Offset(0, 5))],
+            boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 5))],
           ),
           child: Center(
             child: Row(
@@ -189,7 +189,7 @@ class _BattleScreenState extends State<BattleScreen> {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [
@@ -202,3 +202,4 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 }
+

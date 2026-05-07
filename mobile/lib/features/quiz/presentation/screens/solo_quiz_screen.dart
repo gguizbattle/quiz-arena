@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -124,8 +124,8 @@ class _SoloQuizScreenState extends State<SoloQuizScreen> with TickerProviderStat
   Color _optionColor(int index) {
     if (!_answered) return AppColors.surfaceLight;
     final correct = _questions[_currentQ]['correct'] as int;
-    if (index == correct) return AppColors.correctAnswer.withOpacity(0.25);
-    if (index == _selectedAnswer) return AppColors.wrongAnswer.withOpacity(0.25);
+    if (index == correct) return AppColors.correctAnswer.withValues(alpha: 0.25);
+    if (index == _selectedAnswer) return AppColors.wrongAnswer.withValues(alpha: 0.25);
     return AppColors.surfaceLight;
   }
 
@@ -185,7 +185,7 @@ class _SoloQuizScreenState extends State<SoloQuizScreen> with TickerProviderStat
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           decoration: BoxDecoration(
-            color: _timeLeft <= 5 ? AppColors.error.withOpacity(0.2) : AppColors.surfaceLight,
+            color: _timeLeft <= 5 ? AppColors.error.withValues(alpha: 0.2) : AppColors.surfaceLight,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: _timeLeft <= 5 ? AppColors.error : Colors.transparent),
           ),
@@ -235,8 +235,8 @@ class _SoloQuizScreenState extends State<SoloQuizScreen> with TickerProviderStat
       decoration: BoxDecoration(
         gradient: AppColors.gradientCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-        boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.1), blurRadius: 20)],
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+        boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.1), blurRadius: 20)],
       ),
       child: Text(question, style: AppTextStyles.questionText),
     ).animate(key: ValueKey(_currentQ)).fadeIn().slideY(begin: -0.1);
@@ -260,7 +260,7 @@ class _SoloQuizScreenState extends State<SoloQuizScreen> with TickerProviderStat
               Container(
                 width: 32,
                 height: 32,
-                decoration: BoxDecoration(color: labelColor.withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(color: labelColor.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(8)),
                 child: Center(child: Text(label, style: AppTextStyles.labelLarge.copyWith(color: labelColor))),
               ),
               const SizedBox(width: 14),
@@ -276,3 +276,4 @@ class _SoloQuizScreenState extends State<SoloQuizScreen> with TickerProviderStat
     ).animate(key: ValueKey('$_currentQ-$index')).fadeIn(delay: Duration(milliseconds: 100 + index * 80)).slideX(begin: 0.1);
   }
 }
+

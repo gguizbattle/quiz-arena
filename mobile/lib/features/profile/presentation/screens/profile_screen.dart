@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -38,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: AppColors.gradientCard,
-        border: Border(bottom: BorderSide(color: AppColors.primary.withOpacity(0.2))),
+        border: Border(bottom: BorderSide(color: AppColors.primary.withValues(alpha: 0.2))),
       ),
       child: Column(
         children: [
@@ -50,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: AppColors.gradientPrimary,
                   shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.4), blurRadius: 20)],
+                  boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 20)],
                 ),
                 child: const Center(child: Text('P', style: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold))),
               ),
@@ -72,7 +72,7 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(color: AppColors.rankGold.withOpacity(0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.rankGold.withOpacity(0.4))),
+                decoration: BoxDecoration(color: AppColors.rankGold.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.rankGold.withValues(alpha: 0.4))),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -133,7 +133,7 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +180,7 @@ class ProfileScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: unlocked ? AppColors.card : AppColors.surface,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: unlocked ? AppColors.accent.withOpacity(0.4) : const Color(0xFF2A2A40)),
+                    border: Border.all(color: unlocked ? AppColors.accent.withValues(alpha: 0.4) : const Color(0xFF2A2A40)),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -215,7 +215,7 @@ class ProfileScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.card,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: isWin ? AppColors.success.withOpacity(0.3) : AppColors.error.withOpacity(0.3)),
+                border: Border.all(color: isWin ? AppColors.success.withValues(alpha: 0.3) : AppColors.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -268,3 +268,4 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
+
