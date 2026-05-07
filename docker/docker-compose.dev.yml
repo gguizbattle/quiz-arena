@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile.dev
+    container_name: quiz-arena-backend
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://quiz_user:quiz_pass@postgres:5432/quiz_arena
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev_secret_change_in_prod
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_in_prod
+    volumes:
+      - ../backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - quiz-network
+
+networks:
+  quiz-network:
+    external: true
