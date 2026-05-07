@@ -12,19 +12,35 @@ import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart'
 import '../../features/tournaments/presentation/screens/tournaments_screen.dart';
 import '../../features/shop/presentation/screens/shop_screen.dart';
 import '../../features/friends/presentation/screens/friends_screen.dart';
+import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
+import '../../features/auth/providers/auth_provider.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+
   return GoRouter(
     initialLocation: '/splash',
+    redirect: (context, state) {
+      final isAuthenticated = authState.whenOrNull(
+        data: (s) => s.status == AuthStatus.authenticated,
+      );
+      final isLoading = authState.isLoading;
+      final path = state.matchedLocation;
+
+      if (isLoading) return null;
+
+      final publicPaths = ['/splash', '/login', '/register'];
+      if (isAuthenticated == true && publicPaths.contains(path)) return '/home';
+      if (isAuthenticated == false && !publicPaths.contains(path)) return '/login';
+      return null;
+    },
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      // Full-screen game routes (no bottom nav)
       GoRoute(path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
       GoRoute(path: '/battle', builder: (_, __) => const BattleScreen()),
-      // Main shell with bottom nav
       ShellRoute(
         builder: (context, state, child) => MainShell(location: state.matchedLocation, child: child),
         routes: [
@@ -44,7 +60,7 @@ class MainShell extends StatelessWidget {
   final Widget child;
   final String location;
 
-  const MainShell({super.key, required this.child, required this.location});
+  const MainShell({super.key, required this.location, required this.child});
 
   static const _tabs = ['/home', '/tournaments', '/shop', '/friends', '/profile'];
 
@@ -73,31 +89,11 @@ class MainShell extends StatelessWidget {
           selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home_rounded),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.emoji_events_outlined),
-              activeIcon: Icon(Icons.emoji_events_rounded),
-              label: 'Tournaments',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.storefront_outlined),
-              activeIcon: Icon(Icons.storefront_rounded),
-              label: 'Shop',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_outline_rounded),
-              activeIcon: Icon(Icons.people_rounded),
-              label: 'Friends',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'Profile',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Home'),
+            BottomNavigationBarItem(icon: Icon(Icons.emoji_events_outlined), activeIcon: Icon(Icons.emoji_events_rounded), label: 'Tournaments'),
+            BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront_rounded), label: 'Shop'),
+            BottomNavigationBarItem(icon: Icon(Icons.people_outline_rounded), activeIcon: Icon(Icons.people_rounded), label: 'Friends'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'Profile'),
           ],
         ),
       ),
