@@ -20,9 +20,11 @@ import { Leaderboard } from './database/entities/leaderboard.entity';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const dbUrl = config.get<string>('DATABASE_URL');
+        let dbUrl = config.get<string>('DATABASE_URL');
         const entities = [User, Category, Question, Match, MatchPlayer, Leaderboard];
         if (dbUrl) {
+          // Supabase: pooler 6543 (transaction) → 5432 (session) for DDL/synchronize
+          dbUrl = dbUrl.replace(':6543/', ':5432/');
           return {
             type: 'postgres',
             url: dbUrl,
