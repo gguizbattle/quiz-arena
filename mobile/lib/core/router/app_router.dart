@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:quiz_arena/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -7,6 +8,7 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/quiz/presentation/screens/solo_quiz_screen.dart';
 import '../../features/battle/presentation/screens/battle_screen.dart';
+import '../../features/battle/presentation/screens/bot_battle_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/leaderboard/presentation/screens/leaderboard_screen.dart';
 import '../../features/tournaments/presentation/screens/tournaments_screen.dart';
@@ -16,10 +18,13 @@ import '../providers/app_providers.dart';
 import '../theme/app_colors.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
 
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
       final isAuthenticated = authState.whenOrNull(
@@ -39,8 +44,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
-      GoRoute(path: '/battle', builder: (_, __) => const BattleScreen()),
+      GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
+      GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/battle', builder: (_, __) => const BattleScreen()),
+      GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/bot-battle', builder: (_, __) => const BotBattleScreen()),
       ShellRoute(
         builder: (context, state, child) => MainShell(location: state.matchedLocation, child: child),
         routes: [
@@ -71,6 +77,7 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
@@ -88,12 +95,12 @@ class MainShell extends StatelessWidget {
           type: BottomNavigationBarType.fixed,
           selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home_rounded), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.emoji_events_outlined), activeIcon: Icon(Icons.emoji_events_rounded), label: 'Tournaments'),
-            BottomNavigationBarItem(icon: Icon(Icons.storefront_outlined), activeIcon: Icon(Icons.storefront_rounded), label: 'Shop'),
-            BottomNavigationBarItem(icon: Icon(Icons.people_outline_rounded), activeIcon: Icon(Icons.people_rounded), label: 'Friends'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), activeIcon: Icon(Icons.person_rounded), label: 'Profile'),
+          items: [
+            BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home_rounded), label: l10n.navHome),
+            BottomNavigationBarItem(icon: const Icon(Icons.emoji_events_outlined), activeIcon: const Icon(Icons.emoji_events_rounded), label: l10n.navTournaments),
+            BottomNavigationBarItem(icon: const Icon(Icons.storefront_outlined), activeIcon: const Icon(Icons.storefront_rounded), label: l10n.navShop),
+            BottomNavigationBarItem(icon: const Icon(Icons.people_outline_rounded), activeIcon: const Icon(Icons.people_rounded), label: l10n.navFriends),
+            BottomNavigationBarItem(icon: const Icon(Icons.person_outline_rounded), activeIcon: const Icon(Icons.person_rounded), label: l10n.navProfile),
           ],
         ),
       ),

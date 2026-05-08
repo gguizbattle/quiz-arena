@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:quiz_arena/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
@@ -8,6 +9,7 @@ class LeaderboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = [
       ('xXProQuizXx', 2100, 142, '🥇'),
       ('NightOwl99', 1980, 127, '🥈'),
@@ -29,7 +31,7 @@ class LeaderboardScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Text('Leaderboard', style: AppTextStyles.headlineLarge).animate().fadeIn(),
+                    Text(l10n.leaderboardTitle, style: AppTextStyles.headlineLarge).animate().fadeIn(),
                     const SizedBox(height: 20),
                     _buildTopThree(players.take(3).toList()),
                   ],
@@ -42,7 +44,7 @@ class LeaderboardScreen extends StatelessWidget {
                   itemBuilder: (_, i) {
                     final p = players[i + 3];
                     final isMe = p.$1 == 'Player123';
-                    return _buildRow(p.$4, p.$1, p.$2, p.$3, isMe, i);
+                    return _buildRow(l10n, p.$4, p.$1, p.$2, p.$3, isMe, i);
                   },
                 ),
               ),
@@ -91,7 +93,7 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(String rank, String name, int elo, int wins, bool isMe, int index) {
+  Widget _buildRow(AppLocalizations l10n, String rank, String name, int elo, int wins, bool isMe, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -110,8 +112,8 @@ class LeaderboardScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$name${isMe ? ' (You)' : ''}', style: AppTextStyles.titleMedium.copyWith(color: isMe ? AppColors.primaryLight : AppColors.textPrimary)),
-                Text('$wins wins', style: AppTextStyles.bodySmall),
+                Text('$name${isMe ? ' ${l10n.youInParens}' : ''}', style: AppTextStyles.titleMedium.copyWith(color: isMe ? AppColors.primaryLight : AppColors.textPrimary)),
+                Text(l10n.winsText(wins), style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -127,4 +129,3 @@ class LeaderboardScreen extends StatelessWidget {
     ).animate().fadeIn(delay: Duration(milliseconds: 100 + index * 80)).slideX(begin: 0.1);
   }
 }
-

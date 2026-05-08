@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:quiz_arena/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
@@ -55,6 +56,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final isLoading = authState.isLoading;
 
@@ -77,46 +79,46 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     padding: EdgeInsets.zero,
                   ),
                   const SizedBox(height: 20),
-                  Text('Create Account', style: AppTextStyles.displayMedium)
+                  Text(l10n.createAccountTitle, style: AppTextStyles.displayMedium)
                       .animate().fadeIn().slideY(begin: 0.2),
                   const SizedBox(height: 6),
-                  Text('Join the GLIC battle arena', style: AppTextStyles.bodyMedium)
+                  Text(l10n.joinBattleArena, style: AppTextStyles.bodyMedium)
                       .animate().fadeIn(delay: 100.ms),
                   const SizedBox(height: 36),
                   _buildField(
                     controller: _usernameCtrl,
-                    hint: 'Username',
+                    hint: l10n.usernameField,
                     icon: Icons.alternate_email_rounded,
                     validator: (v) {
-                      if (v!.isEmpty) return 'Required';
-                      if (v.length < 3) return 'Min 3 characters';
-                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(v)) return 'Letters, numbers and _ only';
+                      if (v!.isEmpty) return l10n.fieldRequired;
+                      if (v.length < 3) return l10n.minThreeChars;
+                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(v)) return l10n.usernameFormatError;
                       return null;
                     },
                   ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
                   const SizedBox(height: 14),
                   _buildField(
                     controller: _emailCtrl,
-                    hint: 'Email',
+                    hint: l10n.emailField,
                     icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
-                      if (v!.isEmpty) return 'Required';
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'Invalid email';
+                      if (v!.isEmpty) return l10n.fieldRequired;
+                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return l10n.invalidEmail;
                       return null;
                     },
                   ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.1),
                   const SizedBox(height: 14),
                   _buildField(
                     controller: _passwordCtrl,
-                    hint: 'Password (min 6 characters)',
+                    hint: l10n.passwordWithMin,
                     icon: Icons.lock_outline_rounded,
                     obscure: _obscure,
                     suffix: IconButton(
                       icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted, size: 20),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
-                    validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
+                    validator: (v) => v!.length < 6 ? l10n.minSixChars : null,
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
                   const SizedBox(height: 30),
                   SizedBox(
@@ -138,7 +140,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         child: Center(
                           child: isLoading
                               ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : Text('CREATE ACCOUNT', style: AppTextStyles.labelLarge.copyWith(fontSize: 14, letterSpacing: 2)),
+                              : Text(l10n.createAccountButton, style: AppTextStyles.labelLarge.copyWith(fontSize: 14, letterSpacing: 2)),
                         ),
                       ),
                     ),
@@ -147,10 +149,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Already have an account? ', style: AppTextStyles.bodyMedium),
+                      Text(l10n.alreadyHaveAccount, style: AppTextStyles.bodyMedium),
                       GestureDetector(
                         onTap: () => context.go('/login'),
-                        child: Text('Login', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w700)),
+                        child: Text(l10n.loginLink, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ).animate().fadeIn(delay: 600.ms),

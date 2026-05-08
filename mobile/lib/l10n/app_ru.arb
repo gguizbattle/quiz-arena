@@ -1,0 +1,221 @@
+{
+  "@@locale": "ru",
+
+  "tagline": "ЗНАЙ . ИГРАЙ . ПОБЕЖДАЙ",
+  "welcomeBack": "С возвращением!",
+  "usernameOrEmail": "Имя пользователя или Email",
+  "password": "Пароль",
+  "fieldRequired": "Обязательно",
+  "minSixChars": "Мин 6 символов",
+  "loginButton": "ВОЙТИ",
+  "dontHaveAccount": "Нет аккаунта? ",
+  "registerLink": "Регистрация",
+
+  "createAccountTitle": "Создать аккаунт",
+  "joinBattleArena": "Присоединяйся к арене GLIC",
+  "usernameField": "Имя пользователя",
+  "minThreeChars": "Мин 3 символа",
+  "usernameFormatError": "Только буквы, цифры и _",
+  "emailField": "Email",
+  "invalidEmail": "Неверный email",
+  "passwordWithMin": "Пароль (мин 6 символов)",
+  "createAccountButton": "СОЗДАТЬ АККАУНТ",
+  "alreadyHaveAccount": "Уже есть аккаунт? ",
+  "loginLink": "Войти",
+
+  "daily": "ЕЖЕДНЕВНЫЙ",
+  "tournament": "ТУРНИР",
+  "winBigRewards": "Выигрывай большие награды!",
+  "startsIn": "Начинается через",
+  "joinNow": "УЧАСТВОВАТЬ",
+  "playModes": "РЕЖИМЫ ИГРЫ",
+  "seeAll": "Все",
+  "quickBattle": "Быстрый бой",
+  "practice": "Тренировка",
+  "battleRoyaleTitle": "БАТЛ\nРОЯЛЬ",
+  "lastOneWins": "Побеждает последний",
+  "dailyMissions": "ЕЖЕДНЕВНЫЕ ЗАДАНИЯ",
+  "mission1": "Сыграй 3 матча",
+  "mission2": "Выиграй 1 матч",
+  "mission3": "Ответь правильно на 10 вопросов",
+  "leaderboard": "Рейтинг",
+  "view": "Смотреть",
+  "topPlayers": "Лучшие игроки",
+
+  "rankDiamond": "Алмаз",
+  "rankPlatinum": "Платина",
+  "rankGoldII": "Золото II",
+  "rankSilver": "Серебро",
+  "rankBronze": "Бронза",
+  "levelLabel": "Уровень",
+  "eloLabel": "ELO",
+  "coinsLabel": "Монеты",
+  "totalWins": "Всего побед",
+  "losses": "Поражения",
+  "totalXP": "Всего XP",
+  "winRate": "% побед",
+  "achievementsTitle": "Достижения",
+  "achievementFirstWin": "Первая победа",
+  "achievementTenWins": "10 побед",
+  "achievementSpeedDemon": "Демон скорости",
+  "achievementFiftyWins": "50 побед",
+  "recentMatchesTitle": "Последние матчи",
+  "matchHistorySoon": "История матчей скоро",
+  "settingsTitle": "Настройки",
+  "notificationsLabel": "Уведомления",
+  "languageLabel": "Язык",
+  "privacyPolicyLabel": "Политика конфиденциальности",
+  "logoutLabel": "Выйти",
+  "errorMessage": "Ошибка: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "oneVsOneBattle": "Бой 1 на 1",
+  "youLabel": "Вы",
+  "eloRankedMatch": "Рейтинговый матч ELO",
+  "findingOpponent": "Поиск соперника...",
+  "matchingSimilarElo": "Подбираем игроков с похожим ELO",
+  "findMatchButton": "НАЙТИ СОПЕРНИКА",
+  "cancelSearch": "Отмена",
+  "coinBalanceTitle": "Баланс монет",
+  "xpBalanceTitle": "Баланс XP",
+  "goToShop": "В магазин",
+  "closeAction": "Закрыть",
+  "notificationsTitle": "Уведомления",
+  "noNotifications": "У вас пока нет уведомлений",
+  "winsLabel": "Победы",
+  "lossesLabel": "Поражения",
+  "winRateLabel": "% Побед",
+
+  "leaderboardTitle": "Рейтинг",
+  "youInParens": "(Вы)",
+  "winsText": "{count} побед",
+  "@winsText": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scoreLabel": "Счёт: {score}",
+  "@scoreLabel": {
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "quizComplete": "Тест завершён!",
+  "earnedLabel": "+ {xp} XP   + {coins} Монет",
+  "@earnedLabel": {
+    "placeholders": {
+      "xp": {"type": "int"},
+      "coins": {"type": "int"}
+    }
+  },
+  "doneButton": "Готово",
+
+  "friendsTitle": "Друзья",
+  "addButton": "Добавить",
+  "searchPlayersHint": "Поиск игроков...",
+  "friendsTab": "Друзья ({count})",
+  "@friendsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "requestsTab": "Заявки ({count})",
+  "@requestsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onlineStatus": "В сети",
+  "offlineStatus": "Не в сети",
+  "challengeButton": "Вызов",
+
+  "shopTitle": "Магазин",
+  "coinPacksSection": "ПАКЕТЫ МОНЕТ",
+  "powerUpsSection": "УСИЛИТЕЛИ",
+  "specialOffer": "СПЕЦПРЕДЛОЖЕНИЕ",
+  "starterBundle": "Стартовый набор",
+  "starterBundleDesc": "5000 монет + 50 кристаллов + 3 подсказки",
+  "popularBadge": "ПОПУЛЯРНО",
+  "starterPack": "Стартовый",
+  "popularPack": "Популярный",
+  "proPack": "Про",
+  "elitePack": "Элитный",
+  "coinsUnit": "{amount} монет",
+  "@coinsUnit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "fiftyFiftyLifeline": "Подсказка 50/50",
+  "extraTimePowerup": "Доп. время +10с",
+  "skipQuestionPowerup": "Пропустить вопрос",
+
+  "tournamentsTitle": "Турниры",
+  "tournamentSubtitle": "Борись за славу и награды",
+  "allFilter": "Все",
+  "liveFilter": "В эфире",
+  "upcomingFilter": "Ближайшие",
+  "myEntriesFilter": "Мои заявки",
+  "dailyChampionship": "Ежедневный чемпионат",
+  "weekendRoyale": "Выходной Рояль",
+  "speedQuizBlitz": "Быстрый блиц",
+  "knowledgeMasters": "Мастера знаний",
+  "playersCount": "{count} игроков",
+  "@playersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "coinsPrize": "Приз {amount}k монет",
+  "@coinsPrize": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "liveBadge": "ПРЯМОЙ ЭФИР",
+  "joinButton": "Участвовать",
+
+  "navHome": "Главная",
+  "navTournaments": "Турниры",
+  "navShop": "Магазин",
+  "navFriends": "Друзья",
+  "navProfile": "Профиль",
+
+  "languageSelectorTitle": "Выберите язык",
+  "azerbaijani": "Azərbaycan",
+  "russian": "Русский",
+  "turkish": "Türkçe",
+  "english": "English",
+
+  "botBattle": "Против бота",
+  "botBattleSubtitle": "Сыграй с ИИ",
+  "soloPlay": "Соло режим",
+  "soloSubtitle": "Тренировка в одиночку",
+  "botLabel": "БОТ",
+  "botThinking": "Бот думает...",
+  "botAnswered": "Бот ответил ✓",
+  "youWon": "Вы победили! 🎉",
+  "botWon": "Бот победил 🤖",
+  "drawResult": "Ничья! 🤝",
+  "yourScore": "Ваш счёт",
+  "botScore": "Счёт бота",
+  "playAgain": "Играть снова",
+  "battleResult": "Результат матча",
+  "xpEarned": "+{xp} XP",
+  "@xpEarned": {
+    "placeholders": {
+      "xp": {"type": "int"}
+    }
+  },
+  "coinsEarned": "+{coins} Монет",
+  "@coinsEarned": {
+    "placeholders": {
+      "coins": {"type": "int"}
+    }
+  }
+}

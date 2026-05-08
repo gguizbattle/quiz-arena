@@ -1,6 +1,37 @@
 version: '3.9'
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: quiz-arena-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: quiz_arena
+      POSTGRES_USER: quiz_user
+      POSTGRES_PASSWORD: quiz_pass
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - quiz-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U quiz_user -d quiz_arena']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: quiz-arena-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - quiz-network
+
   backend:
     build:
       context: ../backend
@@ -11,19 +42,32 @@ services:
       - '3000:3000'
     environment:
       NODE_ENV: development
-      DATABASE_URL: postgresql://quiz_user:quiz_pass@postgres:5432/quiz_arena
-      REDIS_URL: redis://redis:6379
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: quiz_arena
+      DATABASE_USER: quiz_user
+      DATABASE_PASSWORD: quiz_pass
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       JWT_SECRET: dev_secret_change_in_prod
+      JWT_EXPIRES_IN: 15m
       JWT_REFRESH_SECRET: dev_refresh_secret_change_in_prod
+      JWT_REFRESH_EXPIRES_IN: 7d
     volumes:
       - ../backend:/app
       - /app/node_modules
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - quiz-network
 
 networks:
   quiz-network:
-    external: true
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

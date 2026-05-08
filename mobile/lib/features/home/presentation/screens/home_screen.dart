@@ -1,18 +1,22 @@
 ﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:quiz_arena/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/providers/local_game_stats_provider.dart';
+import '../../providers/user_provider.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   late Timer _timer;
   Duration _remaining = const Duration(hours: 2, minutes: 45, seconds: 12);
 
@@ -34,6 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   String _pad(int n) => n.toString().padLeft(2, '0');
 
+  double _computeLevelProgress(int totalXp, int level) {
+    final lower = (level - 1) * 1000;
+    final upper = level * 1000;
+    final span = upper - lower;
+    if (span == 0) return 0;
+    return ((totalXp - lower) / span).clamp(0.0, 1.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,9 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildHeader(),
               _buildCurrencyRow(),
-              _buildTournamentBanner(),
+              _buildTournamentBanner(context),
               _buildPlayModes(context),
-              _buildDailyMissions(),
+              _buildDailyMissions(context),
               _buildLeaderboard(context),
               const SizedBox(height: 20),
             ],
@@ -58,138 +70,335 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Row(
-        children: [
-          // Avatar with level badge
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  gradient: AppColors.gradientPrimary,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.primary, width: 2),
-                ),
-                child: const Center(
-                  child: Text('P', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                ),
-              ),
-              Positioned(
-                bottom: -4,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: AppColors.gold,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text('23', style: TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w800)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          // Name + XP bar
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final profileAsync = ref.watch(userProfileProvider);
+    final localStats = ref.watch(localGameStatsProvider);
+
+    return profileAsync.when(
+      loading: () => const Padding(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
+        child: SizedBox(height: 60, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+      ),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (profile) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+        child: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
               children: [
-                Text('PlayerOne', style: AppTextStyles.titleLarge),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: 2450 / 3500,
-                    backgroundColor: AppColors.surfaceLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    minHeight: 5,
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.gradientPrimary,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary, width: 2),
+                  ),
+                  child: Center(
+                    child: Text(
+                      profile.username[0].toUpperCase(),
+                      style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text('2,450 / 3,500 XP', style: AppTextStyles.bodySmall.copyWith(fontSize: 10)),
+                Positioned(
+                  bottom: -4,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: AppColors.gold,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${profile.level}',
+                        style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
-          ),
-          const SizedBox(width: 12),
-          // Bell
-          Stack(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceLight,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.notifications_outlined, color: AppColors.textSecondary, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(profile.username, style: AppTextStyles.titleLarge),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: _computeLevelProgress(profile.xp + localStats.bonusXp, profile.level),
+                      backgroundColor: AppColors.surfaceLight,
+                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                      minHeight: 5,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${(profile.xp + localStats.bonusXp).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} / ${profile.xpForNextLevel.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} XP',
+                    style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+                  ),
+                ],
               ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
-                ),
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () => _showNotificationsSheet(AppLocalizations.of(context)!),
+              child: Stack(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceLight,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.notifications_outlined, color: AppColors.textSecondary, size: 22),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
-      ).animate().fadeIn(duration: 400.ms),
+            ),
+          ],
+        ).animate().fadeIn(duration: 400.ms),
+      ),
     );
   }
 
   Widget _buildCurrencyRow() {
+    final profileAsync = ref.watch(userProfileProvider);
+    final localStats = ref.watch(localGameStatsProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final coins = (profileAsync.valueOrNull?.coins ?? 0) + localStats.bonusCoins;
+    final xp = (profileAsync.valueOrNull?.xp ?? 0) + localStats.bonusXp;
+    final coinsText = coins.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+    final xpText = xp.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
         children: [
-          _buildCurrencyBadge(Icons.monetization_on, '12,540', AppColors.gold),
-          const SizedBox(width: 10),
-          _buildCurrencyBadge(Icons.diamond, '350', AppColors.cyan),
-          const Spacer(),
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+          _buildCurrencyBadge(
+            icon: Icons.monetization_on,
+            amount: coinsText,
+            color: AppColors.gold,
+            onTapBadge: () => _showBalanceSheet(
+              icon: Icons.monetization_on,
+              title: l10n.coinBalanceTitle,
+              amount: coinsText,
+              color: AppColors.gold,
+              l10n: l10n,
             ),
-            child: const Icon(Icons.add, color: AppColors.primary, size: 18),
+            onTapPlus: () => context.go('/shop'),
+          ),
+          const SizedBox(width: 10),
+          _buildCurrencyBadge(
+            icon: Icons.star,
+            amount: xpText,
+            color: AppColors.accent,
+            onTapBadge: () => _showBalanceSheet(
+              icon: Icons.star,
+              title: l10n.xpBalanceTitle,
+              amount: xpText,
+              color: AppColors.accent,
+              l10n: l10n,
+            ),
+            onTapPlus: () => context.go('/shop'),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: () => context.go('/shop'),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLight,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+              ),
+              child: const Icon(Icons.add, color: AppColors.primary, size: 18),
+            ),
           ),
         ],
       ).animate().fadeIn(delay: 150.ms),
     );
   }
 
-  Widget _buildCurrencyBadge(IconData icon, String amount, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+  void _showNotificationsSheet(AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 15),
-          const SizedBox(width: 4),
-          Text(amount, style: AppTextStyles.labelLarge.copyWith(color: color, fontSize: 13)),
-        ],
+      builder: (sheetCtx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Icon(Icons.notifications_off_outlined, size: 56, color: AppColors.textMuted),
+            const SizedBox(height: 16),
+            Text(l10n.notificationsTitle, style: AppTextStyles.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              l10n.noNotifications,
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            TextButton(
+              onPressed: () => Navigator.of(sheetCtx).pop(),
+              child: Text(
+                l10n.closeAction,
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildTournamentBanner() {
+  void _showBalanceSheet({
+    required IconData icon,
+    required String title,
+    required String amount,
+    required Color color,
+    required AppLocalizations l10n,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.background,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withValues(alpha: 0.4), width: 2),
+              ),
+              child: Icon(icon, color: color, size: 32),
+            ),
+            const SizedBox(height: 16),
+            Text(title, style: AppTextStyles.titleLarge),
+            const SizedBox(height: 8),
+            Text(
+              amount,
+              style: AppTextStyles.headlineLarge.copyWith(color: color, fontSize: 36),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(sheetCtx).pop();
+                  context.go('/shop');
+                },
+                icon: const Icon(Icons.storefront_rounded, size: 20),
+                label: Text(l10n.goToShop, style: AppTextStyles.labelLarge),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: color,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () => Navigator.of(sheetCtx).pop(),
+              child: Text(
+                l10n.closeAction,
+                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrencyBadge({
+    required IconData icon,
+    required String amount,
+    required Color color,
+    required VoidCallback onTapBadge,
+    required VoidCallback onTapPlus,
+  }) {
+    return GestureDetector(
+      onTap: onTapBadge,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(10, 5, 4, 5),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: color, size: 15),
+            const SizedBox(width: 4),
+            Text(amount, style: AppTextStyles.labelLarge.copyWith(color: color, fontSize: 13)),
+            const SizedBox(width: 6),
+            GestureDetector(
+              onTap: onTapPlus,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.25),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.add, color: color, size: 14),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTournamentBanner(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Container(
@@ -203,7 +412,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Stack(
           children: [
-            // Decorative circles
             Positioned(
               right: -20,
               top: -20,
@@ -228,7 +436,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Trophy
             Positioned(
               right: 16,
               top: 0,
@@ -237,23 +444,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   .animate()
                   .scale(delay: 400.ms, duration: 600.ms, curve: Curves.elasticOut),
             ),
-            // Content
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('DAILY', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70, letterSpacing: 2, fontSize: 11)),
-                  Text('TOURNAMENT', style: AppTextStyles.headlineLarge.copyWith(color: Colors.white, fontSize: 22, height: 1.1)),
-                  const SizedBox(height: 2),
-                  Text('Win big rewards!', style: AppTextStyles.bodySmall.copyWith(color: Colors.white60)),
-                  const SizedBox(height: 10),
+                  Text(l10n.daily, style: AppTextStyles.bodySmall.copyWith(color: Colors.white70, letterSpacing: 2, fontSize: 11)),
+                  Text(l10n.tournament, style: AppTextStyles.headlineLarge.copyWith(color: Colors.white, fontSize: 22, height: 1.1)),
+                  Text(l10n.winBigRewards, style: AppTextStyles.bodySmall.copyWith(color: Colors.white60)),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Starts in', style: AppTextStyles.bodySmall.copyWith(color: Colors.white54, fontSize: 10)),
+                          Text(l10n.startsIn, style: AppTextStyles.bodySmall.copyWith(color: Colors.white54, fontSize: 10)),
                           Text(
                             '${_pad(_remaining.inHours)}:${_pad(_remaining.inMinutes % 60)}:${_pad(_remaining.inSeconds % 60)}',
                             style: AppTextStyles.titleLarge.copyWith(color: Colors.white, fontWeight: FontWeight.w800, letterSpacing: 2),
@@ -269,7 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: AppColors.gold,
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Text('JOIN NOW', style: AppTextStyles.labelLarge.copyWith(color: Colors.black, fontSize: 12)),
+                          child: Text(l10n.joinNow, style: AppTextStyles.labelLarge.copyWith(color: Colors.black, fontSize: 12)),
                         ),
                       ),
                     ],
@@ -284,47 +489,59 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPlayModes(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         children: [
-          _buildSectionHeader('PLAY MODES', 'See All', () {}),
+          _buildSectionHeader(l10n.playModes, l10n.seeAll, () {}),
           const SizedBox(height: 14),
-          SizedBox(
-            height: 130,
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildModeCard(
-                    title: '1v1',
-                    subtitle: 'Quick Battle',
-                    emoji: '⚔️',
-                    gradient: AppColors.gradientPrimary,
-                    onTap: () => context.go('/battle'),
-                  ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.2),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildModeCard(
-                    title: 'SOLO',
-                    subtitle: 'Practice',
-                    emoji: '🤖',
-                    gradient: AppColors.gradientBattle,
-                    onTap: () => context.go('/quiz'),
-                  ).animate().fadeIn(delay: 380.ms).slideY(begin: 0.2),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildModeCard(
-                    title: 'BATTLE\nROYALE',
-                    subtitle: 'Last One Wins',
-                    emoji: '👑',
-                    gradient: AppColors.gradientBattleRoyale,
-                    onTap: () => context.go('/tournaments'),
-                  ).animate().fadeIn(delay: 460.ms).slideX(begin: 0.2),
-                ),
-              ],
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildModeCard(
+                  title: '1v1',
+                  subtitle: l10n.quickBattle,
+                  emoji: '⚔️',
+                  gradient: AppColors.gradientPrimary,
+                  onTap: () => context.push('/battle'),
+                ).animate().fadeIn(delay: 300.ms).slideX(begin: -0.2),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildModeCard(
+                  title: l10n.botBattle,
+                  subtitle: l10n.botBattleSubtitle,
+                  emoji: '🤖',
+                  gradient: AppColors.gradientCyan,
+                  onTap: () => context.push('/bot-battle'),
+                ).animate().fadeIn(delay: 360.ms).slideY(begin: 0.2),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildModeCard(
+                  title: l10n.soloPlay,
+                  subtitle: l10n.soloSubtitle,
+                  emoji: '🧠',
+                  gradient: AppColors.gradientBattle,
+                  onTap: () => context.push('/quiz'),
+                ).animate().fadeIn(delay: 420.ms).slideX(begin: -0.2),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildModeCard(
+                  title: l10n.battleRoyaleTitle,
+                  subtitle: l10n.lastOneWins,
+                  emoji: '👑',
+                  gradient: AppColors.gradientBattleRoyale,
+                  onTap: () => context.go('/tournaments'),
+                ).animate().fadeIn(delay: 480.ms).slideX(begin: 0.2),
+              ),
+            ],
           ),
         ],
       ),
@@ -341,6 +558,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 100,
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(16),
@@ -351,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
+            Text(emoji, style: const TextStyle(fontSize: 30)),
             const SizedBox(height: 6),
             Text(
               title,
@@ -366,18 +584,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDailyMissions() {
+  Widget _buildDailyMissions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final missions = [
-      (Icons.track_changes_rounded, 'Play 3 matches', 2, 3, AppColors.pink, 200, false),
-      (Icons.bolt, 'Win 1 match', 1, 1, AppColors.success, 150, true),
-      (Icons.psychology_rounded, 'Answer 10 questions correctly', 7, 10, AppColors.cyan, 250, false),
+      (Icons.track_changes_rounded, l10n.mission1, 2, 3, AppColors.pink, 200, false),
+      (Icons.bolt, l10n.mission2, 1, 1, AppColors.success, 150, true),
+      (Icons.psychology_rounded, l10n.mission3, 7, 10, AppColors.cyan, 250, false),
     ];
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
         children: [
-          _buildSectionHeader('DAILY MISSIONS', 'See All', () {}),
+          _buildSectionHeader(l10n.dailyMissions, l10n.seeAll, () {}),
           const SizedBox(height: 14),
           ...missions.asMap().entries.map((e) {
             final (icon, name, current, total, color, coins, done) = e.value;
@@ -461,6 +680,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLeaderboard(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final players = [
       ('QuizMaster', 12540, '🥇', 1),
       ('BrainKing', 11230, '🥈', 2),
@@ -475,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('LEADERBOARD', style: AppTextStyles.labelLarge.copyWith(letterSpacing: 1, fontSize: 13)),
+              Text(l10n.leaderboard.toUpperCase(), style: AppTextStyles.labelLarge.copyWith(letterSpacing: 1, fontSize: 13)),
               GestureDetector(
                 onTap: () => context.go('/leaderboard'),
                 child: Container(
@@ -485,13 +705,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
                   ),
-                  child: Text('View', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w600)),
+                  child: Text(l10n.view, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text('Top Players', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+          Text(l10n.topPlayers, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
           const SizedBox(height: 12),
           Row(
             children: players.asMap().entries.map((e) {
@@ -566,4 +786,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

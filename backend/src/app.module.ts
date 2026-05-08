@@ -19,17 +19,31 @@ import { Leaderboard } from './database/entities/leaderboard.entity';
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get('DATABASE_HOST'),
-        port: +config.get('DATABASE_PORT'),
-        database: config.get('DATABASE_NAME'),
-        username: config.get('DATABASE_USER'),
-        password: config.get('DATABASE_PASSWORD'),
-        entities: [User, Category, Question, Match, MatchPlayer, Leaderboard],
-        synchronize: config.get('NODE_ENV') === 'development',
-        logging: false,
-      }),
+      useFactory: (config: ConfigService) => {
+        const dbUrl = config.get<string>('DATABASE_URL');
+        const entities = [User, Category, Question, Match, MatchPlayer, Leaderboard];
+        if (dbUrl) {
+          return {
+            type: 'postgres',
+            url: dbUrl,
+            ssl: { rejectUnauthorized: false },
+            entities,
+            synchronize: true,
+            logging: false,
+          } as any;
+        }
+        return {
+          type: 'postgres',
+          host: config.get<string>('DATABASE_HOST'),
+          port: +(config.get<string>('DATABASE_PORT') ?? 5432),
+          database: config.get<string>('DATABASE_NAME'),
+          username: config.get<string>('DATABASE_USER'),
+          password: config.get<string>('DATABASE_PASSWORD'),
+          entities,
+          synchronize: config.get('NODE_ENV') === 'development',
+          logging: false,
+        } as any;
+      },
     }),
     AuthModule,
     UsersModule,

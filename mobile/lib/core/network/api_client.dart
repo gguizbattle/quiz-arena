@@ -40,9 +40,10 @@ class _AuthInterceptor extends QueuedInterceptorsWrapper {
         final refreshToken = await _storage.read(key: 'refresh_token');
         if (refreshToken == null) return handler.next(err);
 
+        final userId = await _storage.read(key: 'user_id');
         final response = await _dio.post(
           ApiEndpoints.refresh,
-          data: {'refresh_token': refreshToken},
+          data: {'user_id': userId, 'refresh_token': refreshToken},
           options: Options(headers: {'Authorization': null}),
         );
 

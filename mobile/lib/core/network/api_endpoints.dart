@@ -1,8 +1,10 @@
+import '../constants/api_constants.dart';
+
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String baseUrl = 'http://10.0.2.2:3000/api/v1'; // Android emulator
-  // static const String baseUrl = 'http://localhost:3000/api/v1'; // Windows/Web
+  static String get baseUrl => ApiConstants.baseUrl;
+  static String get socketUrl => ApiConstants.socketUrl;
 
   static const String register = '/auth/register';
   static const String login = '/auth/login';

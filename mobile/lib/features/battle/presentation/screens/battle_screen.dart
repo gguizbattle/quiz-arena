@@ -1,27 +1,119 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:quiz_arena/app_localizations.dart';
+import '../../../../core/providers/local_game_stats_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../home/providers/user_provider.dart';
+import '../../data/battle_socket_service.dart';
+import 'battle_match_screen.dart';
 
-class BattleScreen extends StatefulWidget {
+class BattleScreen extends ConsumerStatefulWidget {
   const BattleScreen({super.key});
 
   @override
-  State<BattleScreen> createState() => _BattleScreenState();
+  ConsumerState<BattleScreen> createState() => _BattleScreenState();
 }
 
-class _BattleScreenState extends State<BattleScreen> {
+class _BattleScreenState extends ConsumerState<BattleScreen> {
+  final BattleSocketService _socket = BattleSocketService();
   bool _searching = false;
+  String? _errorMessage;
 
-  void _startSearch() {
-    setState(() => _searching = true);
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) setState(() => _searching = false);
+  @override
+  void dispose() {
+    if (!_searching) {
+      _socket.disconnect();
+    }
+    super.dispose();
+  }
+
+  Future<void> _startSearch() async {
+    final profile = ref.read(userProfileProvider).valueOrNull;
+    if (profile == null) {
+      setState(() => _errorMessage = 'Profil yüklənmədi');
+      return;
+    }
+
+    setState(() {
+      _searching = true;
+      _errorMessage = null;
     });
+
+    _socket.connect();
+
+    // Bağlantı yaranana qədər kiçik gecikmə
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    _socket.onWaiting(() {
+      // Server queue-da gözləməyimizi təsdiqlədi
+    });
+
+    _socket.onMatchStart((data) {
+      if (!mounted) return;
+      final indices = (data['questionIndices'] as List).map((e) => e as int).toList();
+      final opponents = data['opponents'] as Map?;
+      final opponentInfo = opponents?[profile.id] as Map?;
+      final opponentName = opponentInfo?['username'] as String? ?? '???';
+      final opponentElo = (opponentInfo?['elo'] as num?)?.toInt() ?? 1000;
+
+      _socket.clearListeners();
+      setState(() => _searching = false);
+
+      Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => BattleMatchScreen(
+          args: BattleMatchArgs(
+            matchId: data['matchId'] as String,
+            userId: profile.id,
+            username: profile.username,
+            questionIndices: indices,
+            opponentName: opponentName,
+            opponentElo: opponentElo,
+            socket: _socket,
+          ),
+        ),
+      )).then((_) {
+        // Match bitdikdə battle screen-ə qayıdırıq
+        if (mounted) setState(() => _searching = false);
+      });
+    });
+
+    _socket.onError((data) {
+      if (!mounted) return;
+      setState(() {
+        _searching = false;
+        _errorMessage = data['message'] as String? ?? 'Xəta baş verdi';
+      });
+    });
+
+    _socket.joinQueue(
+      userId: profile.id,
+      username: profile.username,
+      elo: profile.elo,
+    );
+  }
+
+  void _cancelSearch() {
+    _socket.cancelQueue();
+    _socket.clearListeners();
+    _socket.disconnect();
+    setState(() => _searching = false);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(userProfileProvider);
+    final localStats = ref.watch(localGameStatsProvider);
+    final profile = profileAsync.valueOrNull;
+    final myElo = profile?.elo ?? 1000;
+    final wins = (profile?.wins ?? 0) + localStats.extraWins;
+    final losses = (profile?.losses ?? 0) + localStats.extraLosses;
+    final total = wins + losses;
+    final winRate = total == 0 ? 0 : ((wins / total) * 100).round();
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.gradientBackground),
@@ -32,15 +124,35 @@ class _BattleScreenState extends State<BattleScreen> {
               children: [
                 Row(
                   children: [
-                    Text('1v1 Battle', style: AppTextStyles.headlineLarge),
+                    GestureDetector(
+                      onTap: () {
+                        if (_searching) _cancelSearch();
+                        context.pop();
+                      },
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textSecondary, size: 18),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(l10n.oneVsOneBattle, style: AppTextStyles.headlineLarge),
                   ],
                 ).animate().fadeIn(),
                 const SizedBox(height: 40),
-                _buildArenaCard(),
+                _buildArenaCard(l10n, profile?.username ?? '...', myElo),
                 const SizedBox(height: 32),
-                if (_searching) _buildSearching() else _buildPlayButton(),
+                if (_searching) _buildSearching(l10n) else _buildPlayButton(l10n),
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Text(_errorMessage!, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
+                ],
                 const SizedBox(height: 32),
-                _buildStats(),
+                _buildStats(l10n, wins, losses, winRate),
               ],
             ),
           ),
@@ -49,7 +161,7 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 
-  Widget _buildArenaCard() {
+  Widget _buildArenaCard(AppLocalizations l10n, String myName, int myElo) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -64,19 +176,15 @@ class _BattleScreenState extends State<BattleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildPlayerCard('You', 1425, '👤', AppColors.primary),
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.accentOrange.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.accentOrange),
-                    ),
-                    child: Text('VS', style: AppTextStyles.headlineMedium.copyWith(color: AppColors.accentOrange)),
-                  ),
-                ],
+              _buildPlayerCard(myName, myElo, '👤', AppColors.primary),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.accentOrange.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.accentOrange),
+                ),
+                child: Text('VS', style: AppTextStyles.headlineMedium.copyWith(color: AppColors.accentOrange)),
               ),
               _buildPlayerCard('???', 0, '❓', AppColors.textMuted),
             ],
@@ -93,7 +201,7 @@ class _BattleScreenState extends State<BattleScreen> {
               children: [
                 const Icon(Icons.military_tech, color: AppColors.rankGold, size: 16),
                 const SizedBox(width: 6),
-                Text('ELO Ranked Match', style: AppTextStyles.bodySmall.copyWith(color: AppColors.rankGold)),
+                Text(l10n.eloRankedMatch, style: AppTextStyles.bodySmall.copyWith(color: AppColors.rankGold)),
               ],
             ),
           ),
@@ -116,13 +224,13 @@ class _BattleScreenState extends State<BattleScreen> {
           child: Center(child: Text(emoji, style: const TextStyle(fontSize: 28))),
         ),
         const SizedBox(height: 8),
-        Text(name, style: AppTextStyles.titleMedium),
+        Text(name, style: AppTextStyles.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
         if (elo > 0) Text('$elo ELO', style: AppTextStyles.bodySmall.copyWith(color: color)),
       ],
     );
   }
 
-  Widget _buildSearching() {
+  Widget _buildSearching(AppLocalizations l10n) {
     return Column(
       children: [
         SizedBox(
@@ -131,16 +239,27 @@ class _BattleScreenState extends State<BattleScreen> {
           child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 3),
         ).animate(onPlay: (c) => c.repeat()).rotate(duration: 1.seconds),
         const SizedBox(height: 16),
-        Text('Finding opponent...', style: AppTextStyles.titleMedium)
+        Text(l10n.findingOpponent, style: AppTextStyles.titleMedium)
             .animate(onPlay: (c) => c.repeat(reverse: true))
             .fadeIn(duration: 800.ms),
         const SizedBox(height: 8),
-        Text('Matching with similar ELO players', style: AppTextStyles.bodySmall),
+        Text(l10n.matchingSimilarElo, style: AppTextStyles.bodySmall),
+        const SizedBox(height: 24),
+        TextButton.icon(
+          onPressed: _cancelSearch,
+          icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.error),
+          label: Text(l10n.cancelSearch, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error)),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            backgroundColor: AppColors.error.withValues(alpha: 0.12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildPlayButton() {
+  Widget _buildPlayButton(AppLocalizations l10n) {
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -162,7 +281,7 @@ class _BattleScreenState extends State<BattleScreen> {
               children: [
                 const Icon(Icons.sports_esports_rounded, color: Colors.black, size: 24),
                 const SizedBox(width: 8),
-                Text('FIND MATCH', style: AppTextStyles.labelLarge.copyWith(color: Colors.black, fontSize: 16, letterSpacing: 2)),
+                Text(l10n.findMatchButton, style: AppTextStyles.labelLarge.copyWith(color: Colors.black, fontSize: 16, letterSpacing: 2)),
               ],
             ),
           ),
@@ -171,14 +290,14 @@ class _BattleScreenState extends State<BattleScreen> {
     ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.2);
   }
 
-  Widget _buildStats() {
+  Widget _buildStats(AppLocalizations l10n, int wins, int losses, int winRate) {
     return Row(
       children: [
-        Expanded(child: _buildStatCard('47', 'Wins', Icons.emoji_events, AppColors.success)),
+        Expanded(child: _buildStatCard('$wins', l10n.winsLabel, Icons.emoji_events, AppColors.success)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard('12', 'Losses', Icons.close, AppColors.error)),
+        Expanded(child: _buildStatCard('$losses', l10n.lossesLabel, Icons.close, AppColors.error)),
         const SizedBox(width: 12),
-        Expanded(child: _buildStatCard('80%', 'Win Rate', Icons.trending_up, AppColors.primary)),
+        Expanded(child: _buildStatCard('$winRate%', l10n.winRateLabel, Icons.trending_up, AppColors.primary)),
       ],
     ).animate().fadeIn(delay: 600.ms);
   }
@@ -202,4 +321,3 @@ class _BattleScreenState extends State<BattleScreen> {
     );
   }
 }
-

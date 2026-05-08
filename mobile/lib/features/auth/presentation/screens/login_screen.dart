@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:quiz_arena/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/language_selector.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,6 +54,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authProvider);
     final isLoading = authState.isLoading;
 
@@ -66,7 +69,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: const LanguageButton(),
+                  ).animate().fadeIn(duration: 400.ms),
+                  const SizedBox(height: 24),
                   Center(
                     child: Container(
                       width: 80,
@@ -92,29 +99,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
                   const SizedBox(height: 28),
-                  Text('Welcome Back!', style: AppTextStyles.displayMedium, textAlign: TextAlign.center)
+                  Text(l10n.welcomeBack, style: AppTextStyles.displayMedium, textAlign: TextAlign.center)
                       .animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
                   const SizedBox(height: 6),
-                  Text('KNOW . PLAY . WIN', style: AppTextStyles.bodySmall.copyWith(letterSpacing: 4, color: AppColors.textMuted), textAlign: TextAlign.center)
+                  Text(l10n.tagline, style: AppTextStyles.bodySmall.copyWith(letterSpacing: 4, color: AppColors.textMuted), textAlign: TextAlign.center)
                       .animate().fadeIn(delay: 300.ms),
                   const SizedBox(height: 44),
                   _buildField(
                     controller: _identifierCtrl,
-                    hint: 'Username or Email',
+                    hint: l10n.usernameOrEmail,
                     icon: Icons.person_outline_rounded,
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
+                    validator: (v) => v!.isEmpty ? l10n.fieldRequired : null,
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
                   const SizedBox(height: 14),
                   _buildField(
                     controller: _passwordCtrl,
-                    hint: 'Password',
+                    hint: l10n.password,
                     icon: Icons.lock_outline_rounded,
                     obscure: _obscure,
                     suffix: IconButton(
                       icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted, size: 20),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
-                    validator: (v) => v!.length < 6 ? 'Min 6 characters' : null,
+                    validator: (v) => v!.length < 6 ? l10n.minSixChars : null,
                   ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.1),
                   const SizedBox(height: 30),
                   SizedBox(
@@ -136,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: Center(
                           child: isLoading
                               ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                              : Text('LOGIN', style: AppTextStyles.labelLarge.copyWith(fontSize: 15, letterSpacing: 3)),
+                              : Text(l10n.loginButton, style: AppTextStyles.labelLarge.copyWith(fontSize: 15, letterSpacing: 3)),
                         ),
                       ),
                     ),
@@ -145,10 +152,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don't have an account? ", style: AppTextStyles.bodyMedium),
+                      Text(l10n.dontHaveAccount, style: AppTextStyles.bodyMedium),
                       GestureDetector(
                         onTap: () => context.go('/register'),
-                        child: Text('Register', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w700)),
+                        child: Text(l10n.registerLink, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ).animate().fadeIn(delay: 700.ms),

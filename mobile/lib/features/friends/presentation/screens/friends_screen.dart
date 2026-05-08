@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:quiz_arena/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
@@ -40,6 +41,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -51,7 +53,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Friends', style: AppTextStyles.headlineLarge).animate().fadeIn(),
+                  Text(l10n.friendsTitle, style: AppTextStyles.headlineLarge).animate().fadeIn(),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
@@ -63,7 +65,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                       children: [
                         const Icon(Icons.person_add_rounded, color: Colors.white, size: 16),
                         const SizedBox(width: 6),
-                        Text('Add', style: AppTextStyles.labelLarge.copyWith(fontSize: 13)),
+                        Text(l10n.addButton, style: AppTextStyles.labelLarge.copyWith(fontSize: 13)),
                       ],
                     ),
                   ).animate().fadeIn(delay: 100.ms),
@@ -71,7 +73,6 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               ),
             ),
             const SizedBox(height: 16),
-            // Search bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
@@ -86,13 +87,12 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                     const SizedBox(width: 12),
                     const Icon(Icons.search, color: AppColors.textMuted, size: 20),
                     const SizedBox(width: 8),
-                    Text('Search players...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
+                    Text(l10n.searchPlayersHint, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textMuted)),
                   ],
                 ),
               ),
             ).animate().fadeIn(delay: 150.ms),
             const SizedBox(height: 16),
-            // Tab bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
@@ -112,8 +112,8 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                   labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   dividerColor: Colors.transparent,
                   tabs: [
-                    Tab(text: 'Friends (${_friends.length})'),
-                    Tab(text: 'Requests (${_requests.length})'),
+                    Tab(text: l10n.friendsTab(_friends.length)),
+                    Tab(text: l10n.requestsTab(_requests.length)),
                   ],
                 ),
               ),
@@ -123,7 +123,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildFriendsList(),
+                  _buildFriendsList(l10n),
                   _buildRequestsList(),
                 ],
               ),
@@ -134,7 +134,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildFriendsList() {
+  Widget _buildFriendsList(AppLocalizations l10n) {
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: _friends.length,
@@ -195,7 +195,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                             shape: BoxShape.circle,
                           ),
                         ),
-                        Text(online ? 'Online' : 'Offline', style: AppTextStyles.bodySmall.copyWith(color: online ? AppColors.success : AppColors.textMuted)),
+                        Text(online ? l10n.onlineStatus : l10n.offlineStatus, style: AppTextStyles.bodySmall.copyWith(color: online ? AppColors.success : AppColors.textMuted)),
                         const SizedBox(width: 8),
                         const Icon(Icons.military_tech, color: AppColors.gold, size: 13),
                         const SizedBox(width: 3),
@@ -213,7 +213,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
                   ),
-                  child: Text('Challenge', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w600)),
+                  child: Text(l10n.challengeButton, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight, fontWeight: FontWeight.w600)),
                 )
               else
                 const Icon(Icons.more_horiz, color: AppColors.textMuted),
@@ -289,4 +289,3 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
     );
   }
 }
-

@@ -1,0 +1,221 @@
+{
+  "@@locale": "en",
+
+  "tagline": "KNOW . PLAY . WIN",
+  "welcomeBack": "Welcome Back!",
+  "usernameOrEmail": "Username or Email",
+  "password": "Password",
+  "fieldRequired": "Required",
+  "minSixChars": "Min 6 characters",
+  "loginButton": "LOGIN",
+  "dontHaveAccount": "Don't have an account? ",
+  "registerLink": "Register",
+
+  "createAccountTitle": "Create Account",
+  "joinBattleArena": "Join the GLIC battle arena",
+  "usernameField": "Username",
+  "minThreeChars": "Min 3 characters",
+  "usernameFormatError": "Letters, numbers and _ only",
+  "emailField": "Email",
+  "invalidEmail": "Invalid email",
+  "passwordWithMin": "Password (min 6 characters)",
+  "createAccountButton": "CREATE ACCOUNT",
+  "alreadyHaveAccount": "Already have an account? ",
+  "loginLink": "Login",
+
+  "daily": "DAILY",
+  "tournament": "TOURNAMENT",
+  "winBigRewards": "Win big rewards!",
+  "startsIn": "Starts in",
+  "joinNow": "JOIN NOW",
+  "playModes": "PLAY MODES",
+  "seeAll": "See All",
+  "quickBattle": "Quick Battle",
+  "practice": "Practice",
+  "battleRoyaleTitle": "BATTLE\nROYALE",
+  "lastOneWins": "Last One Wins",
+  "dailyMissions": "DAILY MISSIONS",
+  "mission1": "Play 3 matches",
+  "mission2": "Win 1 match",
+  "mission3": "Answer 10 questions correctly",
+  "leaderboard": "Leaderboard",
+  "view": "View",
+  "topPlayers": "Top Players",
+
+  "rankDiamond": "Diamond",
+  "rankPlatinum": "Platinum",
+  "rankGoldII": "Gold II",
+  "rankSilver": "Silver",
+  "rankBronze": "Bronze",
+  "levelLabel": "Level",
+  "eloLabel": "ELO",
+  "coinsLabel": "Coins",
+  "totalWins": "Total Wins",
+  "losses": "Losses",
+  "totalXP": "Total XP",
+  "winRate": "Win Rate",
+  "achievementsTitle": "Achievements",
+  "achievementFirstWin": "First Win",
+  "achievementTenWins": "10 Wins",
+  "achievementSpeedDemon": "Speed Demon",
+  "achievementFiftyWins": "50 Wins",
+  "recentMatchesTitle": "Recent Matches",
+  "matchHistorySoon": "Match history coming soon",
+  "settingsTitle": "Settings",
+  "notificationsLabel": "Notifications",
+  "languageLabel": "Language",
+  "privacyPolicyLabel": "Privacy Policy",
+  "logoutLabel": "Logout",
+  "errorMessage": "Error: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "oneVsOneBattle": "1v1 Battle",
+  "youLabel": "You",
+  "eloRankedMatch": "ELO Ranked Match",
+  "findingOpponent": "Finding opponent...",
+  "matchingSimilarElo": "Matching with similar ELO players",
+  "findMatchButton": "FIND OPPONENT",
+  "cancelSearch": "Cancel",
+  "coinBalanceTitle": "Coin Balance",
+  "xpBalanceTitle": "XP Balance",
+  "goToShop": "Go to Shop",
+  "closeAction": "Close",
+  "notificationsTitle": "Notifications",
+  "noNotifications": "You have no notifications yet",
+  "winsLabel": "Wins",
+  "lossesLabel": "Losses",
+  "winRateLabel": "Win Rate",
+
+  "leaderboardTitle": "Leaderboard",
+  "youInParens": "(You)",
+  "winsText": "{count} wins",
+  "@winsText": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scoreLabel": "Score: {score}",
+  "@scoreLabel": {
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "quizComplete": "Quiz Complete!",
+  "earnedLabel": "+ {xp} XP   + {coins} Coins",
+  "@earnedLabel": {
+    "placeholders": {
+      "xp": {"type": "int"},
+      "coins": {"type": "int"}
+    }
+  },
+  "doneButton": "Done",
+
+  "friendsTitle": "Friends",
+  "addButton": "Add",
+  "searchPlayersHint": "Search players...",
+  "friendsTab": "Friends ({count})",
+  "@friendsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "requestsTab": "Requests ({count})",
+  "@requestsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onlineStatus": "Online",
+  "offlineStatus": "Offline",
+  "challengeButton": "Challenge",
+
+  "shopTitle": "Shop",
+  "coinPacksSection": "COIN PACKS",
+  "powerUpsSection": "POWER-UPS",
+  "specialOffer": "SPECIAL OFFER",
+  "starterBundle": "Starter Bundle",
+  "starterBundleDesc": "5000 coins + 50 gems + 3 lifelines",
+  "popularBadge": "POPULAR",
+  "starterPack": "Starter",
+  "popularPack": "Popular",
+  "proPack": "Pro",
+  "elitePack": "Elite",
+  "coinsUnit": "{amount} coins",
+  "@coinsUnit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "fiftyFiftyLifeline": "50/50 Lifeline",
+  "extraTimePowerup": "Extra Time +10s",
+  "skipQuestionPowerup": "Skip Question",
+
+  "tournamentsTitle": "Tournaments",
+  "tournamentSubtitle": "Compete for glory and rewards",
+  "allFilter": "All",
+  "liveFilter": "Live",
+  "upcomingFilter": "Upcoming",
+  "myEntriesFilter": "My Entries",
+  "dailyChampionship": "Daily Championship",
+  "weekendRoyale": "Weekend Royale",
+  "speedQuizBlitz": "Speed Quiz Blitz",
+  "knowledgeMasters": "Knowledge Masters",
+  "playersCount": "{count} players",
+  "@playersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "coinsPrize": "{amount}k coins prize",
+  "@coinsPrize": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "liveBadge": "LIVE",
+  "joinButton": "Join",
+
+  "navHome": "Home",
+  "navTournaments": "Tournaments",
+  "navShop": "Shop",
+  "navFriends": "Friends",
+  "navProfile": "Profile",
+
+  "languageSelectorTitle": "Select Language",
+  "azerbaijani": "Azərbaycan",
+  "russian": "Русский",
+  "turkish": "Türkçe",
+  "english": "English",
+
+  "botBattle": "Vs Bot",
+  "botBattleSubtitle": "Challenge the AI",
+  "soloPlay": "Solo Play",
+  "soloSubtitle": "Practice on your own",
+  "botLabel": "BOT",
+  "botThinking": "Bot is thinking...",
+  "botAnswered": "Bot answered ✓",
+  "youWon": "You Won! 🎉",
+  "botWon": "Bot Won 🤖",
+  "drawResult": "It's a Draw! 🤝",
+  "yourScore": "Your Score",
+  "botScore": "Bot Score",
+  "playAgain": "Play Again",
+  "battleResult": "Match Result",
+  "xpEarned": "+{xp} XP",
+  "@xpEarned": {
+    "placeholders": {
+      "xp": {"type": "int"}
+    }
+  },
+  "coinsEarned": "+{coins} Coins",
+  "@coinsEarned": {
+    "placeholders": {
+      "coins": {"type": "int"}
+    }
+  }
+}

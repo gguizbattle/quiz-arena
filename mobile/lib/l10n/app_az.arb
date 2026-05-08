@@ -1,0 +1,221 @@
+{
+  "@@locale": "az",
+
+  "tagline": "BİL . OYNA . QAZAN",
+  "welcomeBack": "Xoş gəldiniz!",
+  "usernameOrEmail": "İstifadəçi adı və ya E-poçt",
+  "password": "Şifrə",
+  "fieldRequired": "Mütləqdir",
+  "minSixChars": "Min 6 simvol",
+  "loginButton": "GİRİŞ",
+  "dontHaveAccount": "Hesabınız yoxdur? ",
+  "registerLink": "Qeydiyyat",
+
+  "createAccountTitle": "Hesab Yarat",
+  "joinBattleArena": "GLIC döyüş arenasına qoşul",
+  "usernameField": "İstifadəçi adı",
+  "minThreeChars": "Min 3 simvol",
+  "usernameFormatError": "Yalnız hərf, rəqəm və _",
+  "emailField": "E-poçt",
+  "invalidEmail": "Yanlış e-poçt",
+  "passwordWithMin": "Şifrə (min 6 simvol)",
+  "createAccountButton": "HESAB YARAT",
+  "alreadyHaveAccount": "Artıq hesabınız var? ",
+  "loginLink": "Daxil ol",
+
+  "daily": "GÜNDƏLİK",
+  "tournament": "TURNIR",
+  "winBigRewards": "Böyük mükafatlar qazan!",
+  "startsIn": "Başlayır",
+  "joinNow": "İNDİ QOŞUL",
+  "playModes": "OYUN REJİMLƏRİ",
+  "seeAll": "Hamısı",
+  "quickBattle": "Sürətli Döyüş",
+  "practice": "Məşq",
+  "battleRoyaleTitle": "DÖYÜŞ\nROYAL",
+  "lastOneWins": "Son Qalan Qazanır",
+  "dailyMissions": "GÜNDƏLİK MİSSİYALAR",
+  "mission1": "3 matç oyna",
+  "mission2": "1 matç qazan",
+  "mission3": "10 sualı düzgün cavabla",
+  "leaderboard": "Reytinq",
+  "view": "Göstər",
+  "topPlayers": "Ən Yaxşı Oyunçular",
+
+  "rankDiamond": "Almaz",
+  "rankPlatinum": "Platin",
+  "rankGoldII": "Qızıl II",
+  "rankSilver": "Gümüş",
+  "rankBronze": "Tunc",
+  "levelLabel": "Səviyyə",
+  "eloLabel": "ELO",
+  "coinsLabel": "Sikkə",
+  "totalWins": "Cəmi Qələbə",
+  "losses": "Məğlubiyyət",
+  "totalXP": "Cəmi XP",
+  "winRate": "Qazanma %",
+  "achievementsTitle": "Nailiyyətlər",
+  "achievementFirstWin": "İlk Qələbə",
+  "achievementTenWins": "10 Qələbə",
+  "achievementSpeedDemon": "Sürət Devi",
+  "achievementFiftyWins": "50 Qələbə",
+  "recentMatchesTitle": "Son Matçlar",
+  "matchHistorySoon": "Matç tarixi tezliklə",
+  "settingsTitle": "Parametrlər",
+  "notificationsLabel": "Bildirişlər",
+  "languageLabel": "Dil",
+  "privacyPolicyLabel": "Gizlilik Siyasəti",
+  "logoutLabel": "Çıxış",
+  "errorMessage": "Xəta: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "oneVsOneBattle": "1v1 Döyüş",
+  "youLabel": "Siz",
+  "eloRankedMatch": "ELO Reytinq Matçı",
+  "findingOpponent": "Rəqib axtarılır...",
+  "matchingSimilarElo": "Oxşar ELO oyunçuları ilə uyğunlaşdırılır",
+  "findMatchButton": "RƏQİB AXTAR",
+  "cancelSearch": "Ləğv et",
+  "coinBalanceTitle": "Sikkə Balansı",
+  "xpBalanceTitle": "XP Balansı",
+  "goToShop": "Mağazaya keç",
+  "closeAction": "Bağla",
+  "notificationsTitle": "Bildirişlər",
+  "noNotifications": "Hələ bildirişiniz yoxdur",
+  "winsLabel": "Qələbə",
+  "lossesLabel": "Məğlubiyyət",
+  "winRateLabel": "Q. Faizi",
+
+  "leaderboardTitle": "Reytinq",
+  "youInParens": "(Siz)",
+  "winsText": "{count} qələbə",
+  "@winsText": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scoreLabel": "Xal: {score}",
+  "@scoreLabel": {
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "quizComplete": "Test Tamamlandı!",
+  "earnedLabel": "+ {xp} XP   + {coins} Sikkə",
+  "@earnedLabel": {
+    "placeholders": {
+      "xp": {"type": "int"},
+      "coins": {"type": "int"}
+    }
+  },
+  "doneButton": "Hazır",
+
+  "friendsTitle": "Dostlar",
+  "addButton": "Əlavə et",
+  "searchPlayersHint": "Oyunçu axtar...",
+  "friendsTab": "Dostlar ({count})",
+  "@friendsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "requestsTab": "Sorğular ({count})",
+  "@requestsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onlineStatus": "Onlayn",
+  "offlineStatus": "Oflayn",
+  "challengeButton": "Çağırış",
+
+  "shopTitle": "Mağaza",
+  "coinPacksSection": "SİKKƏ PAKETLƏRİ",
+  "powerUpsSection": "GÜCLƏNDİRİCİLƏR",
+  "specialOffer": "XÜSUSİ TƏKLİF",
+  "starterBundle": "Başlanğıc Paketi",
+  "starterBundleDesc": "5000 sikkə + 50 daş + 3 ipucu",
+  "popularBadge": "MƏŞHUR",
+  "starterPack": "Başlanğıc",
+  "popularPack": "Məşhur",
+  "proPack": "Pro",
+  "elitePack": "Elit",
+  "coinsUnit": "{amount} sikkə",
+  "@coinsUnit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "fiftyFiftyLifeline": "50/50 İpucu",
+  "extraTimePowerup": "Əlavə Vaxt +10s",
+  "skipQuestionPowerup": "Sualı Keç",
+
+  "tournamentsTitle": "Turnirlər",
+  "tournamentSubtitle": "Şöhrət və mükafatlar üçün yarış",
+  "allFilter": "Hamısı",
+  "liveFilter": "Canlı",
+  "upcomingFilter": "Gələcək",
+  "myEntriesFilter": "Qeydiyyatlarım",
+  "dailyChampionship": "Günlük Çempionat",
+  "weekendRoyale": "Həftəsonu Royal",
+  "speedQuizBlitz": "Sürətli Bilik Blitzi",
+  "knowledgeMasters": "Bilik Ustadları",
+  "playersCount": "{count} oyunçu",
+  "@playersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "coinsPrize": "{amount}k sikkə mükafatı",
+  "@coinsPrize": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "liveBadge": "CANLI",
+  "joinButton": "Qoşul",
+
+  "navHome": "Ana Səhifə",
+  "navTournaments": "Turnirlər",
+  "navShop": "Mağaza",
+  "navFriends": "Dostlar",
+  "navProfile": "Profil",
+
+  "languageSelectorTitle": "Dil seçin",
+  "azerbaijani": "Azərbaycan",
+  "russian": "Русский",
+  "turkish": "Türkçe",
+  "english": "English",
+
+  "botBattle": "Bota Qarşı",
+  "botBattleSubtitle": "AI ilə yarış",
+  "soloPlay": "Tək Oyna",
+  "soloSubtitle": "Öz başına məşq et",
+  "botLabel": "BOT",
+  "botThinking": "Bot düşünür...",
+  "botAnswered": "Bot cavabladı ✓",
+  "youWon": "Siz Qazandınız! 🎉",
+  "botWon": "Bot Qazandı 🤖",
+  "drawResult": "Bərabərlik! 🤝",
+  "yourScore": "Sizin Xal",
+  "botScore": "Bot Xalı",
+  "playAgain": "Yenidən Oyna",
+  "battleResult": "Matç Nəticəsi",
+  "xpEarned": "+{xp} XP",
+  "@xpEarned": {
+    "placeholders": {
+      "xp": {"type": "int"}
+    }
+  },
+  "coinsEarned": "+{coins} Sikkə",
+  "@coinsEarned": {
+    "placeholders": {
+      "coins": {"type": "int"}
+    }
+  }
+}

@@ -1,0 +1,221 @@
+{
+  "@@locale": "tr",
+
+  "tagline": "BİL . OYNA . KAZAN",
+  "welcomeBack": "Tekrar Hoşgeldin!",
+  "usernameOrEmail": "Kullanıcı Adı veya Email",
+  "password": "Şifre",
+  "fieldRequired": "Zorunlu",
+  "minSixChars": "Min 6 karakter",
+  "loginButton": "GİRİŞ",
+  "dontHaveAccount": "Hesabın yok mu? ",
+  "registerLink": "Kayıt Ol",
+
+  "createAccountTitle": "Hesap Oluştur",
+  "joinBattleArena": "GLIC savaş arenasına katıl",
+  "usernameField": "Kullanıcı Adı",
+  "minThreeChars": "Min 3 karakter",
+  "usernameFormatError": "Sadece harf, rakam ve _",
+  "emailField": "Email",
+  "invalidEmail": "Geçersiz email",
+  "passwordWithMin": "Şifre (min 6 karakter)",
+  "createAccountButton": "HESAP OLUŞTUR",
+  "alreadyHaveAccount": "Zaten hesabın var mı? ",
+  "loginLink": "Giriş",
+
+  "daily": "GÜNLÜK",
+  "tournament": "TURNUVA",
+  "winBigRewards": "Büyük ödüller kazan!",
+  "startsIn": "Başlıyor",
+  "joinNow": "ŞİMDİ KATIL",
+  "playModes": "OYUN MODLARI",
+  "seeAll": "Tümü",
+  "quickBattle": "Hızlı Savaş",
+  "practice": "Antrenman",
+  "battleRoyaleTitle": "BATTLE\nROYALE",
+  "lastOneWins": "Son Kalan Kazanır",
+  "dailyMissions": "GÜNLÜK GÖREVLER",
+  "mission1": "3 maç oyna",
+  "mission2": "1 maç kazan",
+  "mission3": "10 soruyu doğru cevapla",
+  "leaderboard": "Sıralama",
+  "view": "Görüntüle",
+  "topPlayers": "En İyi Oyuncular",
+
+  "rankDiamond": "Elmas",
+  "rankPlatinum": "Platin",
+  "rankGoldII": "Altın II",
+  "rankSilver": "Gümüş",
+  "rankBronze": "Bronz",
+  "levelLabel": "Seviye",
+  "eloLabel": "ELO",
+  "coinsLabel": "Jeton",
+  "totalWins": "Toplam Galibiyet",
+  "losses": "Mağlubiyetler",
+  "totalXP": "Toplam XP",
+  "winRate": "Galibiyet %",
+  "achievementsTitle": "Başarılar",
+  "achievementFirstWin": "İlk Galibiyet",
+  "achievementTenWins": "10 Galibiyet",
+  "achievementSpeedDemon": "Hız Canavarı",
+  "achievementFiftyWins": "50 Galibiyet",
+  "recentMatchesTitle": "Son Maçlar",
+  "matchHistorySoon": "Maç geçmişi yakında",
+  "settingsTitle": "Ayarlar",
+  "notificationsLabel": "Bildirimler",
+  "languageLabel": "Dil",
+  "privacyPolicyLabel": "Gizlilik Politikası",
+  "logoutLabel": "Çıkış",
+  "errorMessage": "Hata: {message}",
+  "@errorMessage": {
+    "placeholders": {
+      "message": {"type": "String"}
+    }
+  },
+
+  "oneVsOneBattle": "1v1 Savaş",
+  "youLabel": "Sen",
+  "eloRankedMatch": "ELO Dereceli Maç",
+  "findingOpponent": "Rakip aranıyor...",
+  "matchingSimilarElo": "Benzer ELO oyuncularıyla eşleştiriliyor",
+  "findMatchButton": "RAKİP BUL",
+  "cancelSearch": "İptal",
+  "coinBalanceTitle": "Jeton Bakiyesi",
+  "xpBalanceTitle": "XP Bakiyesi",
+  "goToShop": "Mağazaya Git",
+  "closeAction": "Kapat",
+  "notificationsTitle": "Bildirimler",
+  "noNotifications": "Henüz bildiriminiz yok",
+  "winsLabel": "Galibiyet",
+  "lossesLabel": "Mağlubiyet",
+  "winRateLabel": "G. Oranı",
+
+  "leaderboardTitle": "Sıralama",
+  "youInParens": "(Sen)",
+  "winsText": "{count} galibiyet",
+  "@winsText": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "scoreLabel": "Puan: {score}",
+  "@scoreLabel": {
+    "placeholders": {
+      "score": {"type": "int"}
+    }
+  },
+  "quizComplete": "Test Tamamlandı!",
+  "earnedLabel": "+ {xp} XP   + {coins} Jeton",
+  "@earnedLabel": {
+    "placeholders": {
+      "xp": {"type": "int"},
+      "coins": {"type": "int"}
+    }
+  },
+  "doneButton": "Tamam",
+
+  "friendsTitle": "Arkadaşlar",
+  "addButton": "Ekle",
+  "searchPlayersHint": "Oyuncu ara...",
+  "friendsTab": "Arkadaşlar ({count})",
+  "@friendsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "requestsTab": "İstekler ({count})",
+  "@requestsTab": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "onlineStatus": "Çevrimiçi",
+  "offlineStatus": "Çevrimdışı",
+  "challengeButton": "Meydan Oku",
+
+  "shopTitle": "Mağaza",
+  "coinPacksSection": "JETON PAKETLERİ",
+  "powerUpsSection": "GÜÇLENDİRİCİLER",
+  "specialOffer": "ÖZEL TEKLİF",
+  "starterBundle": "Başlangıç Paketi",
+  "starterBundleDesc": "5000 jeton + 50 taş + 3 joker",
+  "popularBadge": "POPÜLER",
+  "starterPack": "Başlangıç",
+  "popularPack": "Popüler",
+  "proPack": "Pro",
+  "elitePack": "Elit",
+  "coinsUnit": "{amount} jeton",
+  "@coinsUnit": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "fiftyFiftyLifeline": "50/50 Joker",
+  "extraTimePowerup": "Ekstra Süre +10s",
+  "skipQuestionPowerup": "Soruyu Geç",
+
+  "tournamentsTitle": "Turnuvalar",
+  "tournamentSubtitle": "Şan ve ödüller için yarış",
+  "allFilter": "Tümü",
+  "liveFilter": "Canlı",
+  "upcomingFilter": "Yaklaşan",
+  "myEntriesFilter": "Kayıtlarım",
+  "dailyChampionship": "Günlük Şampiyonluk",
+  "weekendRoyale": "Hafta Sonu Royale",
+  "speedQuizBlitz": "Hızlı Quiz Blitz",
+  "knowledgeMasters": "Bilgi Ustaları",
+  "playersCount": "{count} oyuncu",
+  "@playersCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "coinsPrize": "{amount}k jeton ödülü",
+  "@coinsPrize": {
+    "placeholders": {
+      "amount": {"type": "String"}
+    }
+  },
+  "liveBadge": "CANLI",
+  "joinButton": "Katıl",
+
+  "navHome": "Ana Sayfa",
+  "navTournaments": "Turnuvalar",
+  "navShop": "Mağaza",
+  "navFriends": "Arkadaşlar",
+  "navProfile": "Profil",
+
+  "languageSelectorTitle": "Dil Seçin",
+  "azerbaijani": "Azərbaycan",
+  "russian": "Русский",
+  "turkish": "Türkçe",
+  "english": "English",
+
+  "botBattle": "Bota Karşı",
+  "botBattleSubtitle": "AI ile yarış",
+  "soloPlay": "Tek Oyna",
+  "soloSubtitle": "Kendi başına antrenman yap",
+  "botLabel": "BOT",
+  "botThinking": "Bot düşünüyor...",
+  "botAnswered": "Bot cevapladı ✓",
+  "youWon": "Kazandınız! 🎉",
+  "botWon": "Bot Kazandı 🤖",
+  "drawResult": "Beraberlik! 🤝",
+  "yourScore": "Puanınız",
+  "botScore": "Bot Puanı",
+  "playAgain": "Tekrar Oyna",
+  "battleResult": "Maç Sonucu",
+  "xpEarned": "+{xp} XP",
+  "@xpEarned": {
+    "placeholders": {
+      "xp": {"type": "int"}
+    }
+  },
+  "coinsEarned": "+{coins} Jeton",
+  "@coinsEarned": {
+    "placeholders": {
+      "coins": {"type": "int"}
+    }
+  }
+}
