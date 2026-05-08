@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../database/entities/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { OtpService } from './otp.service';
 
 @Injectable()
 export class AuthService {
@@ -14,33 +15,76 @@ export class AuthService {
     @InjectRepository(User) private usersRepo: Repository<User>,
     private jwtService: JwtService,
     private config: ConfigService,
+    private otp: OtpService,
   ) {}
 
+  /// Step 1: Register starts the verification flow.
+  /// Creates user with email_verified=false and sends OTP.
   async register(dto: RegisterDto) {
     const exists = await this.usersRepo.findOne({
       where: [{ username: dto.username }, { email: dto.email }],
     });
-    if (exists) throw new ConflictException('Username or email already taken');
+    if (exists) {
+      // Email artıq alınıb, lakin verify edilməyibsə → yenidən OTP göndər
+      if (exists.email === dto.email && !exists.email_verified) {
+        await this.otp.send(dto.email);
+        return { needsVerification: true, email: dto.email };
+      }
+      throw new ConflictException('Username or email already taken');
+    }
 
     const hash = await bcrypt.hash(dto.password, 12);
     const user = this.usersRepo.create({
       username: dto.username,
       email: dto.email,
       password_hash: hash,
+      email_verified: false,
     });
     await this.usersRepo.save(user);
+    await this.otp.send(dto.email);
+    return { needsVerification: true, email: dto.email };
+  }
+
+  /// Step 2: User submits OTP code; on success returns tokens.
+  async verifyOtp(email: string, code: string) {
+    const result = this.otp.verify(email, code);
+    if (!result.ok) {
+      throw new BadRequestException('invalid_otp');
+    }
+    const user = await this.usersRepo.findOne({
+      where: { email },
+      select: ['id', 'username', 'email', 'xp', 'level', 'coins', 'elo', 'email_verified'],
+    });
+    if (!user) throw new UnauthorizedException();
+    if (!user.email_verified) {
+      await this.usersRepo.update(user.id, { email_verified: true });
+      user.email_verified = true;
+    }
     return this.generateTokens(user);
+  }
+
+  async resendOtp(email: string) {
+    const user = await this.usersRepo.findOne({ where: { email } });
+    if (!user) throw new UnauthorizedException('user_not_found');
+    if (user.email_verified) throw new BadRequestException('already_verified');
+    await this.otp.send(email);
+    return { sent: true };
   }
 
   async login(dto: LoginDto) {
     const user = await this.usersRepo.findOne({
       where: [{ username: dto.identifier }, { email: dto.identifier }],
-      select: ['id', 'username', 'email', 'password_hash', 'xp', 'level', 'coins', 'elo'],
+      select: ['id', 'username', 'email', 'password_hash', 'xp', 'level', 'coins', 'elo', 'email_verified'],
     });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
     const valid = await bcrypt.compare(dto.password, user.password_hash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
+
+    if (!user.email_verified) {
+      await this.otp.send(user.email);
+      throw new UnauthorizedException('email_not_verified');
+    }
 
     return this.generateTokens(user);
   }

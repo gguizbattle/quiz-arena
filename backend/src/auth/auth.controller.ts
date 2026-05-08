@@ -13,6 +13,18 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
+  @Post('verify-otp')
+  @HttpCode(200)
+  verifyOtp(@Body() body: { email: string; code: string }) {
+    return this.authService.verifyOtp(body.email, body.code);
+  }
+
+  @Post('resend-otp')
+  @HttpCode(200)
+  resendOtp(@Body() body: { email: string }) {
+    return this.authService.resendOtp(body.email);
+  }
+
   @Post('login')
   @HttpCode(200)
   login(@Body() dto: LoginDto) {

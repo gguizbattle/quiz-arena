@@ -46,6 +46,9 @@ export class User {
   @Column({ default: false })
   is_premium: boolean;
 
+  @Column({ default: false })
+  email_verified: boolean;
+
   @Column({ nullable: true })
   google_id: string;
 
