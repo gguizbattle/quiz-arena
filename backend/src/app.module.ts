@@ -7,6 +7,7 @@ import { QuestionsModule } from './questions/questions.module';
 import { MatchesModule } from './matches/matches.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { AdminModule } from './admin/admin.module';
 import { User } from './database/entities/user.entity';
 import { Category } from './database/entities/category.entity';
 import { Question } from './database/entities/question.entity';
@@ -53,6 +54,7 @@ import { Leaderboard } from './database/entities/leaderboard.entity';
     MatchesModule,
     LeaderboardModule,
     WebsocketModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
