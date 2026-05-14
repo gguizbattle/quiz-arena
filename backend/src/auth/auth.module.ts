@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EmailService } from './email.service';
 import { OtpService } from './otp.service';
+import { SocialAuthService } from './social-auth.service';
 import { User } from '../database/entities/user.entity';
 
 @Module({
@@ -15,7 +16,7 @@ import { User } from '../database/entities/user.entity';
     PassportModule,
     JwtModule.register({}),
   ],
-  providers: [AuthService, JwtStrategy, EmailService, OtpService],
+  providers: [AuthService, JwtStrategy, EmailService, OtpService, SocialAuthService],
   controllers: [AuthController],
   exports: [AuthService],
 })

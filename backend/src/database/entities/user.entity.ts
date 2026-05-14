@@ -55,6 +55,9 @@ export class User {
   @Column({ nullable: true })
   apple_id: string;
 
+  @Column({ nullable: true })
+  facebook_id: string;
+
   @Column({ nullable: true, type: 'text' })
   refresh_token: string | null;
 
