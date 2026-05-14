@@ -18,6 +18,6 @@ import { User } from '../database/entities/user.entity';
   ],
   providers: [AuthService, JwtStrategy, EmailService, OtpService, SocialAuthService],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, EmailService],
 })
 export class AuthModule {}

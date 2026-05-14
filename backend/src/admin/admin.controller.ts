@@ -1,5 +1,5 @@
 import {
-  Controller, Delete, ForbiddenException, Get, Headers,
+  Body, Controller, Delete, ForbiddenException, Get, Headers, Post,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import { User } from '../database/entities/user.entity';
 import { Match } from '../database/entities/match.entity';
 import { MatchPlayer } from '../database/entities/match-player.entity';
 import { Leaderboard } from '../database/entities/leaderboard.entity';
+import { EmailService } from '../auth/email.service';
 
 /**
  * Admin endpoint-ləri yalnız X-Admin-Key header doğru olduqda işləyir.
@@ -21,6 +22,7 @@ export class AdminController {
     @InjectRepository(Match) private matchesRepo: Repository<Match>,
     @InjectRepository(MatchPlayer) private playersRepo: Repository<MatchPlayer>,
     @InjectRepository(Leaderboard) private leaderboardRepo: Repository<Leaderboard>,
+    private email: EmailService,
   ) {}
 
   private assertAdmin(key?: string) {
@@ -64,6 +66,28 @@ export class AdminController {
           : 'password',
       })),
     };
+  }
+
+  @Get('smtp')
+  smtpStatus(@Headers('x-admin-key') key?: string) {
+    this.assertAdmin(key);
+    return this.email.status();
+  }
+
+  @Post('smtp/test')
+  async sendTestEmail(
+    @Headers('x-admin-key') key: string | undefined,
+    @Body() body: { to: string },
+  ) {
+    this.assertAdmin(key);
+    if (!body?.to) return { ok: false, error: 'to_required' };
+    try {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await this.email.sendOtp(body.to, code);
+      return { ok: true, code };
+    } catch (e: any) {
+      return { ok: false, error: e?.message ?? String(e) };
+    }
   }
 
   @Get('stats')
