@@ -41,7 +41,9 @@ export class AuthService {
       email_verified: false,
     });
     await this.usersRepo.save(user);
-    await this.otp.send(dto.email);
+    if (dto.email) {
+      await this.otp.send(dto.email);
+    }
     return { needsVerification: true, email: dto.email };
   }
 

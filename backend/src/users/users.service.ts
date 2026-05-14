@@ -26,4 +26,40 @@ export class UsersService {
     const user = await this.findById(id);
     return { elo: user.elo, wins: user.wins, losses: user.losses };
   }
+
+  /**
+   * Bot match / solo quiz / digər lokal oyunlardan qazanılan toplu mükafatı
+   * backend-ə sinxronlaşdırır. Mobile-də lokal queue-da yığılan xp/coins/wins
+   * ədədləri tək sorğu ilə göndərilir. ELO dəyişmir (yalnız real 1v1).
+   */
+  async applyLocalReward(
+    id: string,
+    payload: { xp?: number; coins?: number; wins?: number; losses?: number; draws?: number },
+  ) {
+    const user = await this.findById(id);
+    const addXp = Math.max(0, Math.floor(payload.xp ?? 0));
+    const addCoins = Math.max(0, Math.floor(payload.coins ?? 0));
+    const addWins = Math.max(0, Math.floor(payload.wins ?? 0));
+    const addLosses = Math.max(0, Math.floor(payload.losses ?? 0));
+    // draws hələ DB-də saxlanılmır, gələcəkdə əlavə oluna bilər
+    const newXp = user.xp + addXp;
+    const newCoins = user.coins + addCoins;
+    const newWins = user.wins + addWins;
+    const newLosses = user.losses + addLosses;
+    const newLevel = this.computeLevel(newXp);
+    await this.repo.update(id, {
+      xp: newXp,
+      coins: newCoins,
+      wins: newWins,
+      losses: newLosses,
+      level: newLevel,
+    });
+    return this.findById(id);
+  }
+
+  private computeLevel(totalXp: number): number {
+    if (totalXp <= 0) return 1;
+    const n = Math.floor((1 + Math.sqrt(1 + (8 * totalXp) / 1000)) / 2);
+    return Math.min(100, Math.max(1, n));
+  }
 }

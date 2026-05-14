@@ -101,7 +101,7 @@ export class MatchesService {
       coins: userA.coins + rewardA.coins,
       wins: userA.wins + (winnerId === userA.id ? 1 : 0),
       losses: userA.losses + (winnerId === userB.id ? 1 : 0),
-      level: Math.max(1, Math.floor((userA.xp + rewardA.xp) / 1000) + 1),
+      level: this.computeLevel(userA.xp + rewardA.xp),
     });
     await this.usersRepo.update(userB.id, {
       elo: newEloB,
@@ -109,7 +109,7 @@ export class MatchesService {
       coins: userB.coins + rewardB.coins,
       wins: userB.wins + (winnerId === userB.id ? 1 : 0),
       losses: userB.losses + (winnerId === userA.id ? 1 : 0),
-      level: Math.max(1, Math.floor((userB.xp + rewardB.xp) / 1000) + 1),
+      level: this.computeLevel(userB.xp + rewardB.xp),
     });
 
     return {
@@ -119,6 +119,18 @@ export class MatchesService {
       newElo: { [userA.id]: newEloA, [userB.id]: newEloB },
       rewards: { [userA.id]: rewardA, [userB.id]: rewardB },
     };
+  }
+
+  /**
+   * Quadratic level curve:
+   * - Lv n → n+1 üçün n*1000 XP lazımdır
+   * - Lv N-ə çatmaq üçün cəmi 500 * N * (N-1) XP
+   * - Max səviyyə 100; XP davam edə bilər, level dayanır
+   */
+  private computeLevel(totalXp: number): number {
+    if (totalXp <= 0) return 1;
+    const n = Math.floor((1 + Math.sqrt(1 + (8 * totalXp) / 1000)) / 2);
+    return Math.min(100, Math.max(1, n));
   }
 
   private calculateReward(outcome: number, correctAnswers: number) {
