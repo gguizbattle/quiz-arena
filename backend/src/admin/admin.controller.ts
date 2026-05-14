@@ -1,5 +1,5 @@
 import {
-  Controller, Delete, ForbiddenException, Headers,
+  Controller, Delete, ForbiddenException, Get, Headers,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -28,6 +28,57 @@ export class AdminController {
     if (!key || key !== expected) {
       throw new ForbiddenException('admin_key_required');
     }
+  }
+
+  @Get('users')
+  async listUsers(@Headers('x-admin-key') key?: string) {
+    this.assertAdmin(key);
+    const users = await this.usersRepo.find({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        avatar: true,
+        xp: true,
+        level: true,
+        coins: true,
+        elo: true,
+        wins: true,
+        losses: true,
+        is_premium: true,
+        email_verified: true,
+        google_id: true,
+        apple_id: true,
+        facebook_id: true,
+        created_at: true,
+      },
+      order: { created_at: 'DESC' },
+    });
+    return {
+      total: users.length,
+      users: users.map((u) => ({
+        ...u,
+        provider: u.google_id ? 'google'
+          : u.apple_id ? 'apple'
+          : u.facebook_id ? 'facebook'
+          : 'password',
+      })),
+    };
+  }
+
+  @Get('stats')
+  async stats(@Headers('x-admin-key') key?: string) {
+    this.assertAdmin(key);
+    const totalUsers = await this.usersRepo.count();
+    const verifiedUsers = await this.usersRepo.count({ where: { email_verified: true } });
+    const totalMatches = await this.matchesRepo.count();
+    const googleUsers = await this.usersRepo.createQueryBuilder('u').where('u.google_id IS NOT NULL').getCount();
+    const facebookUsers = await this.usersRepo.createQueryBuilder('u').where('u.facebook_id IS NOT NULL').getCount();
+    const appleUsers = await this.usersRepo.createQueryBuilder('u').where('u.apple_id IS NOT NULL').getCount();
+    return {
+      users: { total: totalUsers, verified: verifiedUsers, google: googleUsers, facebook: facebookUsers, apple: appleUsers },
+      matches: { total: totalMatches },
+    };
   }
 
   @Delete('reset-users')
