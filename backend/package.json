@@ -1,7 +1,7 @@
 {
-  "name": "backend",
+  "name": "gguiz-battle-backend",
   "version": "0.0.1",
-  "description": "",
+  "description": "Gguiz Battle - backend (NestJS)",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
