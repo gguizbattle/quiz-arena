@@ -18,18 +18,12 @@ export class AuthService {
     private otp: OtpService,
   ) {}
 
-  /// Step 1: Register starts the verification flow.
-  /// Creates user with email_verified=false and sends OTP.
+  /// Qeydiyyat: OTP ləğv edildiyi üçün dərhal token qaytarır.
   async register(dto: RegisterDto) {
     const exists = await this.usersRepo.findOne({
       where: [{ username: dto.username }, { email: dto.email }],
     });
     if (exists) {
-      // Email artıq alınıb, lakin verify edilməyibsə → yenidən OTP göndər
-      if (exists.email === dto.email && !exists.email_verified) {
-        await this.otp.send(dto.email);
-        return { needsVerification: true, email: dto.email };
-      }
       throw new ConflictException('Username or email already taken');
     }
 
@@ -38,13 +32,10 @@ export class AuthService {
       username: dto.username,
       email: dto.email,
       password_hash: hash,
-      email_verified: false,
+      email_verified: true, // OTP axını ləğv edilib
     });
     await this.usersRepo.save(user);
-    if (dto.email) {
-      await this.otp.send(dto.email);
-    }
-    return { needsVerification: true, email: dto.email };
+    return this.generateTokens(user);
   }
 
   /// Step 2: User submits OTP code; on success returns tokens.
@@ -83,11 +74,7 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.password_hash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    if (!user.email_verified) {
-      await this.otp.send(user.email);
-      throw new UnauthorizedException('email_not_verified');
-    }
-
+    // OTP/email verification ləğv edilib
     return this.generateTokens(user);
   }
 
