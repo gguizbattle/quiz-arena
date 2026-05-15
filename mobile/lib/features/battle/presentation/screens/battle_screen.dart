@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -20,32 +22,40 @@ class BattleScreen extends ConsumerStatefulWidget {
 class _BattleScreenState extends ConsumerState<BattleScreen> {
   final BattleSocketService _socket = BattleSocketService();
   bool _searching = false;
+  bool _searchTooLong = false;
   String? _errorMessage;
+  Timer? _searchTimeout;
 
   @override
   void dispose() {
-    if (!_searching) {
-      _socket.disconnect();
+    _searchTimeout?.cancel();
+    if (_searching) {
+      _socket.cancelQueue();
     }
+    _socket.clearListeners();
+    _socket.disconnect();
     super.dispose();
   }
 
   Future<void> _startSearch() async {
     final profile = ref.read(userProfileProvider).valueOrNull;
+    final l10n = AppLocalizations.of(context)!;
     if (profile == null) {
-      setState(() => _errorMessage = 'Profil yüklənmədi');
+      setState(() => _errorMessage = l10n.profileLoadFailed);
       return;
     }
 
     setState(() {
       _searching = true;
+      _searchTooLong = false;
       _errorMessage = null;
     });
 
-    _socket.connect();
-
-    // Bağlantı yaranana qədər kiçik gecikmə
-    await Future.delayed(const Duration(milliseconds: 400));
+    _searchTimeout?.cancel();
+    _searchTimeout = Timer(const Duration(seconds: 30), () {
+      if (!mounted) return;
+      if (_searching) setState(() => _searchTooLong = true);
+    });
 
     _socket.onWaiting(() {
       // Server queue-da gözləməyimizi təsdiqlədi
@@ -59,8 +69,12 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
       final opponentName = opponentInfo?['username'] as String? ?? '???';
       final opponentElo = (opponentInfo?['elo'] as num?)?.toInt() ?? 1000;
 
+      _searchTimeout?.cancel();
       _socket.clearListeners();
-      setState(() => _searching = false);
+      setState(() {
+        _searching = false;
+        _searchTooLong = false;
+      });
 
       Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => BattleMatchScreen(
@@ -75,31 +89,73 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
           ),
         ),
       )).then((_) {
-        // Match bitdikdə battle screen-ə qayıdırıq
+        // Match bitdikdən sonra battle screen-ə qayıdırıq
         if (mounted) setState(() => _searching = false);
       });
     });
 
     _socket.onError((data) {
       if (!mounted) return;
+      _searchTimeout?.cancel();
+      final code = data['message'] as String?;
+      String message;
+      switch (code) {
+        case 'ALREADY_IN_MATCH':
+          message = l10n.alreadyInMatchMessage;
+          break;
+        default:
+          message = l10n.errorGeneric;
+      }
       setState(() {
         _searching = false;
-        _errorMessage = data['message'] as String? ?? 'Xəta baş verdi';
+        _searchTooLong = false;
+        _errorMessage = message;
       });
     });
 
-    _socket.joinQueue(
-      userId: profile.id,
-      username: profile.username,
-      elo: profile.elo,
+    // Bağlantı qurulduqdan SONRA queue-ya qoşul (vaxtsız emit-i önləmək üçün).
+    _socket.connect(
+      whenConnected: () {
+        if (!mounted || !_searching) return;
+        _socket.joinQueue(
+          userId: profile.id,
+          username: profile.username,
+          elo: profile.elo,
+        );
+      },
+      onConnectError: (_) {
+        if (!mounted) return;
+        _searchTimeout?.cancel();
+        setState(() {
+          _searching = false;
+          _searchTooLong = false;
+          _errorMessage = l10n.errorNetwork;
+        });
+      },
     );
   }
 
   void _cancelSearch() {
+    _searchTimeout?.cancel();
     _socket.cancelQueue();
     _socket.clearListeners();
     _socket.disconnect();
-    setState(() => _searching = false);
+    setState(() {
+      _searching = false;
+      _searchTooLong = false;
+    });
+  }
+
+  void _switchToBot() {
+    _searchTimeout?.cancel();
+    _socket.cancelQueue();
+    _socket.clearListeners();
+    _socket.disconnect();
+    setState(() {
+      _searching = false;
+      _searchTooLong = false;
+    });
+    context.pushReplacement('/bot-battle');
   }
 
   @override
@@ -245,6 +301,27 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
         const SizedBox(height: 8),
         Text(l10n.matchingSimilarElo, style: AppTextStyles.bodySmall),
         const SizedBox(height: 24),
+        if (_searchTooLong) ...[
+          Text(
+            l10n.noOpponentFoundYet,
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.accentOrange),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            onPressed: _switchToBot,
+            icon: const Icon(Icons.smart_toy_rounded, size: 18, color: Colors.black),
+            label: Text(
+              l10n.playWithBotInstead,
+              style: AppTextStyles.labelLarge.copyWith(color: Colors.black, fontSize: 14),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentOrange,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
         TextButton.icon(
           onPressed: _cancelSearch,
           icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.error),

@@ -39,7 +39,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createAccountTitle => 'Create Account';
 
   @override
-  String get joinBattleArena => 'Join the GLIC battle arena';
+  String get joinBattleArena => 'Join the Gguiz Battle arena';
 
   @override
   String get usernameField => 'Username';
@@ -112,6 +112,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mission3 => 'Answer 10 questions correctly';
+
+  @override
+  String missionPlayMatch(int count) {
+    return 'Play $count matches';
+  }
+
+  @override
+  String missionWinMatch(int count) {
+    return 'Win $count matches';
+  }
+
+  @override
+  String missionAnswerCorrect(int count) {
+    return 'Answer $count questions correctly';
+  }
+
+  @override
+  String missionFastAnswer(int count) {
+    return 'Answer $count questions within 5 seconds';
+  }
+
+  @override
+  String missionWinStreak(int count) {
+    return 'Win $count matches in a row';
+  }
+
+  @override
+  String missionRefreshIn(String time) {
+    return 'Refreshes in: $time';
+  }
+
+  @override
+  String get missionClaim => 'Claim';
+
+  @override
+  String get missionClaimed => 'Claimed';
+
+  @override
+  String missionRewardXp(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String missionRewardCoins(int coins) {
+    return '+$coins coins';
+  }
 
   @override
   String get leaderboard => 'Leaderboard';
@@ -221,6 +267,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelSearch => 'Cancel';
 
   @override
+  String get noOpponentFoundYet => 'No opponent found yet';
+
+  @override
+  String get playWithBotInstead => 'Play with bot';
+
+  @override
+  String get maxLevelBadge => 'Max level';
+
+  @override
+  String get levelUpTitle => 'LEVEL UP!';
+
+  @override
+  String levelUpSubtitle(int level) {
+    return 'You reached level $level!';
+  }
+
+  @override
+  String get continueButton => 'CONTINUE';
+
+  @override
+  String get levelTier1 => 'BEGINNER';
+
+  @override
+  String get levelTier2 => 'EXPERIENCED';
+
+  @override
+  String get levelTier3 => 'KNOWLEDGEABLE';
+
+  @override
+  String get levelTier4 => 'MASTER';
+
+  @override
+  String get levelTier5 => 'EXPERT';
+
+  @override
+  String get levelTier6 => 'CHAMPION';
+
+  @override
+  String get levelTier7 => 'LEGENDARY';
+
+  @override
+  String get orContinueWith => 'OR';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get continueWithApple => 'Continue with Apple';
+
+  @override
+  String get continueWithFacebook => 'Continue with Facebook';
+
+  @override
+  String get socialLoginFailed => 'Sign-in failed. Please try again.';
+
+  @override
   String get coinBalanceTitle => 'Coin Balance';
 
   @override
@@ -237,6 +339,48 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noNotifications => 'You have no notifications yet';
+
+  @override
+  String get errorInvalidCredentials => 'Invalid username or password';
+
+  @override
+  String get errorUserExists => 'This username or email is already registered';
+
+  @override
+  String get errorNetwork =>
+      'Cannot reach server. Please check your internet connection';
+
+  @override
+  String get errorGeneric => 'Something went wrong. Please try again';
+
+  @override
+  String get confirmPasswordField => 'Repeat password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get otpTitle => 'Verify your email';
+
+  @override
+  String otpSubtitle(String email) {
+    return 'We sent a 6-digit code to $email';
+  }
+
+  @override
+  String get otpInputHint => 'Verification code';
+
+  @override
+  String get otpVerifyButton => 'VERIFY';
+
+  @override
+  String get otpResendButton => 'Resend code';
+
+  @override
+  String get otpInvalid => 'Invalid or expired code';
+
+  @override
+  String get otpResent => 'Code sent';
 
   @override
   String get winsLabel => 'Wins';
@@ -257,6 +401,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String winsText(int count) {
     return '$count wins';
   }
+
+  @override
+  String get leaderboardEmpty => 'No players yet';
+
+  @override
+  String get leaderboardEmptyHint => 'Play to be the first!';
+
+  @override
+  String get leaderboardError => 'Failed to load leaderboard';
 
   @override
   String scoreLabel(int score) {
@@ -453,6 +606,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get botWon => 'Bot Won 🤖';
 
   @override
+  String get opponentThinking => 'is thinking...';
+
+  @override
+  String get opponentAnswered => 'answered ✓';
+
+  @override
+  String get opponentWon => 'Opponent Won';
+
+  @override
+  String get youLost => 'You Lost 💔';
+
+  @override
   String get drawResult => 'It\'s a Draw! 🤝';
 
   @override
@@ -476,4 +641,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String coinsEarned(int coins) {
     return '+$coins Coins';
   }
+
+  @override
+  String get profileLoadFailed => 'Failed to load profile';
+
+  @override
+  String get opponentDisconnectedMessage => 'Opponent disconnected';
+
+  @override
+  String get alreadyInMatchMessage => 'You are already in a match';
+
+  @override
+  String get connectionLostMessage => 'Connection lost';
 }

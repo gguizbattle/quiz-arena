@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
@@ -8,6 +8,7 @@ import '../../../../core/providers/local_game_stats_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/language_selector.dart';
+import '../../../home/data/user_repository.dart';
 import '../../../home/providers/user_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -33,10 +34,11 @@ class ProfileScreen extends ConsumerWidget {
               final totalLosses = profile.losses + localStats.extraLosses;
               final totalGames = totalWins + totalLosses;
               final winRate = totalGames == 0 ? 0.0 : totalWins / totalGames;
+              final effectiveLevel = UserProfile.levelFromXp(totalXp);
               return SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHeader(context, ref, l10n, profile.username, profile.level, profile.elo, totalCoins),
+                  _buildHeader(context, ref, l10n, profile.username, effectiveLevel, totalXp, profile.elo, totalCoins),
                   _buildStatsGrid(l10n, totalWins, totalLosses, totalXp, winRate),
                   const SizedBox(height: 20),
                   _buildAchievements(l10n),
@@ -55,7 +57,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref, AppLocalizations l10n, String username, int level, int elo, int coins) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, AppLocalizations l10n, String username, int level, int totalXp, int elo, int coins) {
     String rankLabel(int elo) {
       if (elo >= 2000) return l10n.rankDiamond;
       if (elo >= 1600) return l10n.rankPlatinum;
@@ -63,6 +65,11 @@ class ProfileScreen extends ConsumerWidget {
       if (elo >= 1200) return l10n.rankSilver;
       return l10n.rankBronze;
     }
+
+    final isMaxLevel = level >= UserProfile.maxLevel;
+    final progress = UserProfile.progressForXp(totalXp);
+    final xpInLevel = UserProfile.xpInLevel(totalXp);
+    final xpNeeded = UserProfile.xpToAdvance(level);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -73,13 +80,15 @@ class ProfileScreen extends ConsumerWidget {
       child: Column(
         children: [
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Container(
-                width: 88,
-                height: 88,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
                   gradient: AppColors.gradientPrimary,
                   shape: BoxShape.circle,
+                  border: Border.all(color: isMaxLevel ? AppColors.gold : AppColors.primary, width: 3),
                   boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 20)],
                 ),
                 child: Center(
@@ -90,11 +99,22 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               Positioned(
-                bottom: 0, right: 0,
-                child: Container(
-                  width: 26, height: 26,
-                  decoration: BoxDecoration(color: AppColors.accent, shape: BoxShape.circle, border: Border.all(color: AppColors.background, width: 2)),
-                  child: const Icon(Icons.edit, size: 14, color: Colors.black),
+                bottom: -6,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isMaxLevel ? AppColors.gold : AppColors.accent,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.background, width: 2),
+                    ),
+                    child: Text(
+                      isMaxLevel ? '$level ${l10n.maxLevelBadge}' : 'Lv. $level',
+                      style: const TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w800),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -127,11 +147,34 @@ class ProfileScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildHeaderStat('Lv. $level', l10n.levelLabel, AppColors.primaryLight),
+              _buildHeaderStat(
+                isMaxLevel ? 'Lv. $level ${l10n.maxLevelBadge}' : 'Lv. $level',
+                l10n.levelLabel,
+                isMaxLevel ? AppColors.gold : AppColors.primaryLight,
+              ),
               _buildHeaderStat('$elo', l10n.eloLabel, AppColors.rankGold),
               _buildHeaderStat('$coins', l10n.coinsLabel, AppColors.accent),
             ],
           ).animate().fadeIn(delay: 400.ms),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 8,
+              backgroundColor: AppColors.surfaceLight,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isMaxLevel ? AppColors.gold : AppColors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            isMaxLevel
+                ? '$totalXp XP'
+                : '$xpInLevel / $xpNeeded XP',
+            style: AppTextStyles.bodySmall,
+          ),
         ],
       ),
     );
@@ -207,7 +250,7 @@ class ProfileScreen extends ConsumerWidget {
           Text(l10n.achievementsTitle, style: AppTextStyles.titleLarge),
           const SizedBox(height: 12),
           SizedBox(
-            height: 90,
+            height: 104,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: achievements.length,
@@ -216,7 +259,7 @@ class ProfileScreen extends ConsumerWidget {
                 final (name, emoji, unlocked) = achievements[i];
                 return Container(
                   width: 78,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   decoration: BoxDecoration(
                     color: unlocked ? AppColors.card : AppColors.surface,
                     borderRadius: BorderRadius.circular(14),
@@ -228,18 +271,23 @@ class ProfileScreen extends ConsumerWidget {
                       Text(
                         emoji,
                         style: TextStyle(
-                          fontSize: 26,
+                          fontSize: 24,
                           color: unlocked ? null : Colors.transparent,
                           shadows: unlocked ? null : const [Shadow(color: Colors.grey, blurRadius: 0)],
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        name,
-                        style: AppTextStyles.bodySmall.copyWith(color: unlocked ? AppColors.textSecondary : AppColors.textMuted),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      Flexible(
+                        child: Text(
+                          name,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: unlocked ? AppColors.textSecondary : AppColors.textMuted,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),

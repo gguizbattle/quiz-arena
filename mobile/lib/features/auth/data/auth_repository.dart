@@ -1,104 +1,67 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../../core/network/api_endpoints.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+/// Bütün auth axını Supabase Auth üzərindən gedir.
+/// Backend token verifikasiyası üçün Supabase JWT istifadə edir.
+/// Bu sinif sadəcə wrap-dır ki, çağırışlar bir yerdə cəmlənsin.
 class AuthRepository {
-  final Dio _dio;
-  final FlutterSecureStorage _storage;
+  final SupabaseClient _client;
 
-  const AuthRepository(this._dio, this._storage);
+  AuthRepository(this._client);
 
-  Future<void> register({
-    required String username,
+  bool get isLoggedIn => _client.auth.currentSession != null;
+
+  User? get currentUser => _client.auth.currentUser;
+
+  String? get accessToken => _client.auth.currentSession?.accessToken;
+
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+
+  /// Email/şifrə ilə qeydiyyat. Supabase `auth.users`-da hesab yaradır
+  /// və DB trigger avtomatik `public.users`-da profil yaradır.
+  Future<AuthResponse> signUpWithEmail({
     required String email,
     required String password,
-  }) async {
-    try {
-      final response = await _dio.post(ApiEndpoints.register, data: {
-        'username': username,
-        'email': email,
-        'password': password,
-      });
-      await _saveTokens(response.data);
-    } on DioException catch (e) {
-      if (_isNetworkError(e)) {
-        await _saveOfflineSession(username: username, email: email);
-        return;
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> login({
-    required String identifier,
-    required String password,
-  }) async {
-    try {
-      final response = await _dio.post(ApiEndpoints.login, data: {
-        'identifier': identifier,
-        'password': password,
-      });
-      await _saveTokens(response.data);
-    } on DioException catch (e) {
-      if (_isNetworkError(e)) {
-        final username = identifier.contains('@')
-            ? identifier.split('@').first
-            : identifier;
-        await _saveOfflineSession(
-          username: username,
-          email: identifier.contains('@') ? identifier : null,
-        );
-        return;
-      }
-      rethrow;
-    }
-  }
-
-  Future<void> logout() async {
-    try {
-      await _dio.post(ApiEndpoints.logout);
-    } catch (_) {
-      // backend yoxdursa belə, lokal sessiyanı təmizlə
-    } finally {
-      await _storage.deleteAll();
-    }
-  }
-
-  Future<bool> isLoggedIn() async {
-    final token = await _storage.read(key: 'access_token');
-    return token != null;
-  }
-
-  bool _isNetworkError(DioException e) {
-    return e.response == null ||
-        e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout ||
-        e.type == DioExceptionType.sendTimeout ||
-        e.type == DioExceptionType.unknown;
-  }
-
-  Future<void> _saveOfflineSession({
     required String username,
-    String? email,
-  }) async {
-    await _storage.write(key: 'access_token', value: 'offline_token');
-    await _storage.write(key: 'refresh_token', value: 'offline_refresh');
-    await _storage.write(key: 'user_id', value: 'offline_user');
-    await _storage.write(key: 'username', value: username);
-    if (email != null) {
-      await _storage.write(key: 'email', value: email);
-    }
-    await _storage.write(key: 'offline_mode', value: 'true');
+  }) {
+    return _client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'username': username},
+    );
   }
 
-  Future<void> _saveTokens(Map<String, dynamic> data) async {
-    await _storage.write(key: 'access_token', value: data['access_token'] as String);
-    await _storage.write(key: 'refresh_token', value: data['refresh_token'] as String);
-    if (data['user'] != null) {
-      final user = data['user'] as Map<String, dynamic>;
-      await _storage.write(key: 'user_id', value: user['id']?.toString());
-      await _storage.write(key: 'username', value: user['username']?.toString());
-    }
+  Future<AuthResponse> signInWithEmail({
+    required String email,
+    required String password,
+  }) {
+    return _client.auth.signInWithPassword(email: email, password: password);
   }
+
+  /// Native Google sign-in: mobile tərəfdə idToken alınır,
+  /// sonra Supabase-ə ötürülür. Web/Server flow yox, native One Tap variantı.
+  Future<AuthResponse> signInWithGoogleIdToken({
+    required String idToken,
+    String? accessToken,
+    String? nonce,
+  }) {
+    return _client.auth.signInWithIdToken(
+      provider: OAuthProvider.google,
+      idToken: idToken,
+      accessToken: accessToken,
+      nonce: nonce,
+    );
+  }
+
+  Future<AuthResponse> signInWithAppleIdToken({
+    required String idToken,
+    String? nonce,
+  }) {
+    return _client.auth.signInWithIdToken(
+      provider: OAuthProvider.apple,
+      idToken: idToken,
+      nonce: nonce,
+    );
+  }
+
+  Future<void> signOut() => _client.auth.signOut();
 }

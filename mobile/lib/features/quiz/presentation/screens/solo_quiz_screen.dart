@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/data/quiz_questions.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
+import '../../../missions/data/daily_mission.dart';
+import '../../../missions/providers/daily_missions_provider.dart';
 
 class SoloQuizScreen extends ConsumerStatefulWidget {
   const SoloQuizScreen({super.key});
@@ -66,11 +68,19 @@ class _SoloQuizScreenState extends ConsumerState<SoloQuizScreen> with TickerProv
     if (_answered) return;
     _timer?.cancel();
     _progressCtrl.stop();
+    final isCorrect = index == _questions[_currentQ].correct;
     setState(() {
       _selectedAnswer = index;
       _answered = true;
-      if (index == _questions[_currentQ].correct) _score++;
+      if (isCorrect) _score++;
     });
+    if (isCorrect) {
+      final missions = ref.read(dailyMissionsProvider.notifier);
+      missions.incrementProgress(MissionType.answerCorrect, 1);
+      if (_timeLeft > _totalTime - 5) {
+        missions.incrementProgress(MissionType.fastAnswer, 1);
+      }
+    }
     Future.delayed(const Duration(milliseconds: 1200), _nextOrResult);
   }
 
@@ -106,6 +116,8 @@ class _SoloQuizScreenState extends ConsumerState<SoloQuizScreen> with TickerProv
           coins: coins,
           outcome: outcome,
         );
+    // Solo "match" sayÄ±lÄ±r, lakin winMatch vÉ™ streak yalnÄ±z 1v1/bot Ã¼Ã§Ã¼n.
+    ref.read(dailyMissionsProvider.notifier).incrementProgress(MissionType.playMatch, 1);
   }
 
   @override
@@ -295,7 +307,7 @@ class _SoloQuizScreenState extends ConsumerState<SoloQuizScreen> with TickerProv
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  isGood ? '🏆' : '📚',
+                  isGood ? 'ðŸ†' : 'ðŸ“š',
                   style: const TextStyle(fontSize: 72),
                 ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
                 const SizedBox(height: 16),
@@ -319,11 +331,11 @@ class _SoloQuizScreenState extends ConsumerState<SoloQuizScreen> with TickerProv
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildStat('✅', '$_score', l10n.totalWins),
+                      _buildStat('âœ…', '$_score', l10n.totalWins),
                       Container(width: 1, height: 50, color: const Color(0xFF2A2A40)),
-                      _buildStat('❌', '${_questions.length - _score}', l10n.losses),
+                      _buildStat('âŒ', '${_questions.length - _score}', l10n.losses),
                       Container(width: 1, height: 50, color: const Color(0xFF2A2A40)),
-                      _buildStat('📊', '$percent%', l10n.winRate),
+                      _buildStat('ðŸ“Š', '$percent%', l10n.winRate),
                     ],
                   ),
                 ).animate().fadeIn(delay: 400.ms),

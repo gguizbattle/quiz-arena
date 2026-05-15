@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../features/home/providers/user_provider.dart';
 
 class LocalGameStats {
   final int bonusXp;
@@ -36,9 +40,12 @@ class LocalGameStats {
 enum GameOutcome { win, loss, draw, none }
 
 class LocalGameStatsNotifier extends StateNotifier<LocalGameStats> {
-  LocalGameStatsNotifier() : super(const LocalGameStats()) {
+  LocalGameStatsNotifier(this._ref) : super(const LocalGameStats()) {
     _load();
   }
+
+  final Ref _ref;
+  bool _syncing = false;
 
   static const _keyXp = 'local_bonus_xp';
   static const _keyCoins = 'local_bonus_coins';
@@ -55,6 +62,8 @@ class LocalGameStatsNotifier extends StateNotifier<LocalGameStats> {
       extraLosses: p.getInt(_keyLosses) ?? 0,
       extraDraws: p.getInt(_keyDraws) ?? 0,
     );
+    // Tətbiq başlayanda yığılmış pending statistikanı backend-ə göndər.
+    unawaited(flushToBackend());
   }
 
   Future<void> _save() async {
@@ -79,6 +88,44 @@ class LocalGameStatsNotifier extends StateNotifier<LocalGameStats> {
       extraDraws: outcome == GameOutcome.draw ? state.extraDraws + 1 : state.extraDraws,
     );
     await _save();
+    // Backend-ə göndərməyi sınamağa cəhd et (uğursuz olarsa, queue-da qalır).
+    unawaited(flushToBackend());
+  }
+
+  /// Lokal queue-da yığılan pending mükafatları backend-ə göndərir.
+  /// Uğurda lokal sıfırlanır, profil refresh olur. Xəta halında saxlanılır.
+  Future<bool> flushToBackend() async {
+    if (_syncing) return false;
+    final pending = state;
+    if (pending.bonusXp == 0 &&
+        pending.bonusCoins == 0 &&
+        pending.extraWins == 0 &&
+        pending.extraLosses == 0 &&
+        pending.extraDraws == 0) {
+      return true;
+    }
+    _syncing = true;
+    try {
+      final repo = _ref.read(userRepositoryProvider);
+      await repo.applyReward(
+        xp: pending.bonusXp,
+        coins: pending.bonusCoins,
+        wins: pending.extraWins,
+        losses: pending.extraLosses,
+        draws: pending.extraDraws,
+      );
+      // Sinxron uğurlu — pending-i sıfırla.
+      state = const LocalGameStats();
+      await _save();
+      // Yeni profili gətir.
+      _ref.invalidate(userProfileProvider);
+      return true;
+    } catch (_) {
+      // Şəbəkə/auth xətası — queue-da qalsın, növbəti girişdə təkrar cəhd.
+      return false;
+    } finally {
+      _syncing = false;
+    }
   }
 
   Future<void> reset() async {
@@ -89,5 +136,5 @@ class LocalGameStatsNotifier extends StateNotifier<LocalGameStats> {
 
 final localGameStatsProvider =
     StateNotifierProvider<LocalGameStatsNotifier, LocalGameStats>((ref) {
-  return LocalGameStatsNotifier();
+  return LocalGameStatsNotifier(ref);
 });

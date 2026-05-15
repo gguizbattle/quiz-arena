@@ -8,16 +8,27 @@ class BattleSocketService {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  void connect() {
-    if (_socket != null && _socket!.connected) return;
-    _socket = io.io(
+  /// Socket-i qoş və `whenConnected` callback-i tetiklə (zatən qoşuludursa dərhal).
+  void connect({void Function()? whenConnected, void Function(Object error)? onConnectError}) {
+    if (_socket != null && _socket!.connected) {
+      whenConnected?.call();
+      return;
+    }
+    _socket ??= io.io(
       ApiConstants.socketUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .disableAutoConnect()
           .build(),
     );
-    _socket!.connect();
+    if (whenConnected != null) {
+      _socket!.onConnect((_) => whenConnected());
+    }
+    if (onConnectError != null) {
+      _socket!.onConnectError((err) => onConnectError(err as Object));
+      _socket!.onError((err) => onConnectError(err as Object));
+    }
+    if (!_socket!.connected) _socket!.connect();
   }
 
   void disconnect() {
@@ -107,5 +118,10 @@ class BattleSocketService {
     _socket?.off('match:result');
     _socket?.off('opponent:disconnected');
     _socket?.off('match:error');
+    _socket?.off('connect');
+    _socket?.off('connect_error');
   }
+
+  /// Cari socket-in id-si (rəqibin cavabını öz cavabımdan ayırmaq üçün).
+  String? get socketId => _socket?.id;
 }

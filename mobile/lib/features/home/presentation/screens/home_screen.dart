@@ -1,12 +1,17 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
+import '../../../leaderboard/data/leaderboard_repository.dart';
+import '../../../leaderboard/providers/leaderboard_provider.dart';
+import '../../../missions/data/daily_mission.dart';
+import '../../../missions/providers/daily_missions_provider.dart';
+import '../../data/user_repository.dart';
 import '../../providers/user_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -19,6 +24,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late Timer _timer;
   Duration _remaining = const Duration(hours: 2, minutes: 45, seconds: 12);
+  final List<dynamic> _notifications = const [];
+  bool get _hasUnreadNotifications => _notifications.isNotEmpty;
 
   @override
   void initState() {
@@ -38,16 +45,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String _pad(int n) => n.toString().padLeft(2, '0');
 
-  double _computeLevelProgress(int totalXp, int level) {
-    final lower = (level - 1) * 1000;
-    final upper = level * 1000;
-    final span = upper - lower;
-    if (span == 0) return 0;
-    return ((totalXp - lower) / span).clamp(0.0, 1.0);
-  }
 
   @override
   Widget build(BuildContext context) {
+    // Profil yüklənən kimi və ya səviyyə dəyişəndə missionları yenilə.
+    ref.listen(userProfileProvider, (_, next) {
+      next.whenData((profile) {
+        ref.read(dailyMissionsProvider.notifier).ensureFresh(profile.level);
+      });
+    });
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -113,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        '${profile.level}',
+                        '${UserProfile.levelFromXp(profile.xp + localStats.bonusXp)}',
                         style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.w800),
                       ),
                     ),
@@ -131,17 +138,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: _computeLevelProgress(profile.xp + localStats.bonusXp, profile.level),
+                      value: UserProfile.progressForXp(profile.xp + localStats.bonusXp),
                       backgroundColor: AppColors.surfaceLight,
                       valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
                       minHeight: 5,
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    '${(profile.xp + localStats.bonusXp).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} / ${profile.xpForNextLevel.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} XP',
-                    style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
-                  ),
+                  Builder(builder: (_) {
+                    final totalXp = profile.xp + localStats.bonusXp;
+                    final lvl = UserProfile.levelFromXp(totalXp);
+                    String fmt(int n) => n.toString().replaceAllMapped(
+                          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                          (m) => '${m[1]},',
+                        );
+                    if (lvl >= UserProfile.maxLevel) {
+                      return Text(
+                        '${fmt(totalXp)} XP • ${AppLocalizations.of(context)!.maxLevelBadge}',
+                        style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.gold),
+                      );
+                    }
+                    final xpInLvl = UserProfile.xpInLevel(totalXp);
+                    final xpNeeded = UserProfile.xpToAdvance(lvl);
+                    return Text(
+                      '${fmt(xpInLvl)} / ${fmt(xpNeeded)} XP',
+                      style: AppTextStyles.bodySmall.copyWith(fontSize: 10),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -159,15 +182,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     child: const Icon(Icons.notifications_outlined, color: AppColors.textSecondary, size: 22),
                   ),
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                  if (_hasUnreadNotifications)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(color: AppColors.error, shape: BoxShape.circle),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -586,31 +610,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildDailyMissions(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final missions = [
-      (Icons.track_changes_rounded, l10n.mission1, 2, 3, AppColors.pink, 200, false),
-      (Icons.bolt, l10n.mission2, 1, 1, AppColors.success, 150, true),
-      (Icons.psychology_rounded, l10n.mission3, 7, 10, AppColors.cyan, 250, false),
-    ];
+    final missionsState = ref.watch(dailyMissionsProvider);
+    final missions = missionsState.missions;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(l10n.dailyMissions, l10n.seeAll, () {}),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(l10n.dailyMissions, style: AppTextStyles.labelLarge.copyWith(letterSpacing: 1, fontSize: 13)),
+              Text(
+                l10n.missionRefreshIn(_formatRefreshCountdown(missionsState.timeUntilRefresh(DateTime.now()))),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted, fontSize: 11),
+              ),
+            ],
+          ),
           const SizedBox(height: 14),
-          ...missions.asMap().entries.map((e) {
-            final (icon, name, current, total, color, coins, done) = e.value;
-            return _buildMissionRow(icon, name, current, total, color, coins, done, e.key)
-                .animate()
-                .fadeIn(delay: Duration(milliseconds: 300 + e.key * 100))
-                .slideX(begin: 0.1);
-          }),
+          if (missions.isEmpty)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              alignment: Alignment.center,
+              child: const CircularProgressIndicator(strokeWidth: 2),
+            )
+          else
+            ...missions.asMap().entries.map((e) {
+              return _buildMissionRow(l10n, e.value, e.key)
+                  .animate()
+                  .fadeIn(delay: Duration(milliseconds: 300 + e.key * 100))
+                  .slideX(begin: 0.1);
+            }),
         ],
       ),
     );
   }
 
-  Widget _buildMissionRow(IconData icon, String name, int current, int total, Color color, int coins, bool done, int index) {
+  String _formatRefreshCountdown(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes % 60;
+    return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+  }
+
+  ({IconData icon, Color color, String label}) _missionVisuals(AppLocalizations l10n, DailyMission m) {
+    return switch (m.type) {
+      MissionType.playMatch =>
+        (icon: Icons.sports_esports_rounded, color: AppColors.cyan, label: l10n.missionPlayMatch(m.target)),
+      MissionType.winMatch =>
+        (icon: Icons.emoji_events_rounded, color: AppColors.success, label: l10n.missionWinMatch(m.target)),
+      MissionType.answerCorrect =>
+        (icon: Icons.psychology_rounded, color: AppColors.pink, label: l10n.missionAnswerCorrect(m.target)),
+      MissionType.fastAnswer =>
+        (icon: Icons.bolt, color: AppColors.accent, label: l10n.missionFastAnswer(m.target)),
+      MissionType.winStreak =>
+        (icon: Icons.local_fire_department_rounded, color: AppColors.error, label: l10n.missionWinStreak(m.target)),
+    };
+  }
+
+  Widget _buildMissionRow(AppLocalizations l10n, DailyMission m, int index) {
+    final v = _missionVisuals(l10n, m);
+    final color = v.color;
+    final rewardText = m.reward == MissionReward.xp
+        ? l10n.missionRewardXp(m.rewardAmount)
+        : l10n.missionRewardCoins(m.rewardAmount);
+    final rewardColor = m.reward == MissionReward.xp ? AppColors.accent : AppColors.gold;
+    final rewardIcon = m.reward == MissionReward.xp ? Icons.star_rounded : Icons.monetization_on;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -628,26 +694,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(v.icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary, fontSize: 13)),
+                Text(v.label, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary, fontSize: 13)),
                 const SizedBox(height: 6),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: current / total,
+                    value: m.target == 0 ? 0 : (m.progress / m.target).clamp(0.0, 1.0),
                     backgroundColor: AppColors.surfaceLight,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     minHeight: 5,
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text('$current / $total', style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted)),
+                Text('${m.progress} / ${m.target}', style: AppTextStyles.bodySmall.copyWith(fontSize: 10, color: AppColors.textMuted)),
               ],
             ),
           ),
@@ -656,22 +722,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.monetization_on, color: AppColors.gold, size: 14),
+                  Icon(rewardIcon, color: rewardColor, size: 14),
                   const SizedBox(width: 3),
-                  Text('$coins', style: AppTextStyles.bodySmall.copyWith(color: AppColors.gold, fontWeight: FontWeight.w600)),
+                  Text(rewardText, style: AppTextStyles.bodySmall.copyWith(color: rewardColor, fontWeight: FontWeight.w600, fontSize: 11)),
                 ],
               ),
               const SizedBox(height: 6),
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: done ? AppColors.success : Colors.transparent,
-                  border: Border.all(color: done ? AppColors.success : AppColors.textMuted, width: 1.5),
-                ),
-                child: done ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
-              ),
+              _buildMissionCtaButton(l10n, m),
             ],
           ),
         ],
@@ -679,14 +736,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildMissionCtaButton(AppLocalizations l10n, DailyMission m) {
+    if (m.claimed) {
+      return Container(
+        width: 28,
+        height: 28,
+        decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.success),
+        child: const Icon(Icons.check, color: Colors.white, size: 16),
+      );
+    }
+    if (m.isCompleted) {
+      return GestureDetector(
+        onTap: () => _claimMission(m),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(l10n.missionClaim, style: AppTextStyles.bodySmall.copyWith(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 11)),
+        ),
+      );
+    }
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: AppColors.textMuted, width: 1.5),
+      ),
+    );
+  }
+
+  Future<void> _claimMission(DailyMission m) async {
+    final result = await ref.read(dailyMissionsProvider.notifier).claim(m.id);
+    if (result == null || !mounted) return;
+    final (reward, amount) = result;
+    await ref.read(localGameStatsProvider.notifier).addReward(
+          xp: reward == MissionReward.xp ? amount : 0,
+          coins: reward == MissionReward.coins ? amount : 0,
+        );
+  }
+
   Widget _buildLeaderboard(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final players = [
-      ('QuizMaster', 12540, '🥇', 1),
-      ('BrainKing', 11230, '🥈', 2),
-      ('SmartAzer', 10980, '🥉', 3),
-      ('LogicPro', 9870, '4', 4),
-    ];
+    final entriesAsync = ref.watch(leaderboardProvider);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -713,56 +807,83 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 8),
           Text(l10n.topPlayers, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
           const SizedBox(height: 12),
-          Row(
-            children: players.asMap().entries.map((e) {
-              final (name, coins, medal, rank) = e.value;
-              return Expanded(
-                child: Container(
-                  margin: EdgeInsets.only(right: e.key < players.length - 1 ? 8 : 0),
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.card,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF2A2A50)),
-                  ),
-                  child: Column(
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          CircleAvatar(
-                            radius: 22,
-                            backgroundColor: AppColors.surfaceLight,
-                            child: Text(name[0], style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
-                          ),
-                          Positioned(
-                            bottom: -4,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Text(medal, style: const TextStyle(fontSize: 14)),
-                            ),
-                          ),
-                        ],
+          entriesAsync.when(
+            loading: () => const SizedBox(
+              height: 110,
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+            error: (_, __) => _buildLeaderboardEmpty(l10n),
+            data: (players) {
+              if (players.isEmpty) return _buildLeaderboardEmpty(l10n);
+              final top = players.take(4).toList();
+              return Row(
+                children: top.asMap().entries.map((e) {
+                  final medal = e.key == 0 ? '🥇' : (e.key == 1 ? '🥈' : (e.key == 2 ? '🥉' : '${e.key + 1}'));
+                  return Expanded(
+                    child: Container(
+                      margin: EdgeInsets.only(right: e.key < top.length - 1 ? 8 : 0),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFF2A2A50)),
                       ),
-                      const SizedBox(height: 10),
-                      Text(name, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.monetization_on, color: AppColors.gold, size: 11),
-                          const SizedBox(width: 2),
-                          Text('${(coins / 1000).toStringAsFixed(1)}k', style: AppTextStyles.bodySmall.copyWith(color: AppColors.gold, fontSize: 11)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: Duration(milliseconds: 400 + e.key * 80)).slideY(begin: 0.2),
+                      child: _buildLeaderboardCell(e.value, medal),
+                    ).animate().fadeIn(delay: Duration(milliseconds: 400 + e.key * 80)).slideY(begin: 0.2),
+                  );
+                }).toList(),
               );
-            }).toList(),
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardCell(LeaderboardEntry p, String medal) {
+    return Column(
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: AppColors.surfaceLight,
+              child: Text(p.username[0], style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
+            ),
+            Positioned(
+              bottom: -4,
+              left: 0,
+              right: 0,
+              child: Center(child: Text(medal, style: const TextStyle(fontSize: 14))),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Text(p.username, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.military_tech, color: AppColors.rankGold, size: 11),
+            const SizedBox(width: 2),
+            Text('${p.elo}', style: AppTextStyles.bodySmall.copyWith(color: AppColors.rankGold, fontSize: 11)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLeaderboardEmpty(AppLocalizations l10n) {
+    return Container(
+      height: 110,
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF2A2A50)),
+      ),
+      child: Center(
+        child: Text(l10n.leaderboardEmpty, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
       ),
     );
   }

@@ -3,12 +3,17 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/data/quiz_questions.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
+import '../../../home/data/user_repository.dart';
+import '../../../home/providers/user_provider.dart';
+import '../../../missions/data/daily_mission.dart';
+import '../../../missions/providers/daily_missions_provider.dart';
+import '../widgets/level_up_overlay.dart';
 
 class BotBattleScreen extends ConsumerStatefulWidget {
   const BotBattleScreen({super.key});
@@ -105,11 +110,20 @@ class _BotBattleScreenState extends ConsumerState<BotBattleScreen> with TickerPr
     _botTimer?.cancel();
     _timerCtrl.stop();
     final q = _questions[_currentQ];
+    final isCorrect = index == q.correct;
     setState(() {
       _playerAnswer = index;
       _answered = true;
-      if (index == q.correct) _playerScore++;
+      if (isCorrect) _playerScore++;
     });
+    if (isCorrect) {
+      final missions = ref.read(dailyMissionsProvider.notifier);
+      missions.incrementProgress(MissionType.answerCorrect, 1);
+      // 5 san É™rzindÉ™: keÃ§É™n vaxt < 5 â†’ _timeLeft > 10
+      if (_timeLeft > _totalTime - 5) {
+        missions.incrementProgress(MissionType.fastAnswer, 1);
+      }
+    }
     if (!_botAnswered) {
       final botDelay = Duration(milliseconds: 500 + _random.nextInt(1500));
       Timer(botDelay, () {
@@ -157,14 +171,33 @@ class _BotBattleScreenState extends ConsumerState<BotBattleScreen> with TickerPr
     _startRound();
   }
 
-  void _saveRewardOnce(int xp, int coins, GameOutcome outcome) {
+  Future<void> _saveRewardOnce(int xp, int coins, GameOutcome outcome) async {
     if (_rewardSaved) return;
     _rewardSaved = true;
-    ref.read(localGameStatsProvider.notifier).addReward(
+
+    // Level-up detection: pre-reward total XP
+    final profile = ref.read(userProfileProvider).valueOrNull;
+    final bonusXp = ref.read(localGameStatsProvider).bonusXp;
+    final oldTotalXp = (profile?.xp ?? 0) + bonusXp;
+    final oldLevel = UserProfile.levelFromXp(oldTotalXp);
+
+    await ref.read(localGameStatsProvider.notifier).addReward(
           xp: xp,
           coins: coins,
           outcome: outcome,
         );
+
+    final missions = ref.read(dailyMissionsProvider.notifier);
+    missions.incrementProgress(MissionType.playMatch, 1);
+    if (outcome == GameOutcome.win) {
+      missions.incrementProgress(MissionType.winMatch, 1);
+    }
+    missions.updateStreak(outcome == GameOutcome.win);
+
+    final newLevel = UserProfile.levelFromXp(oldTotalXp + xp);
+    if (newLevel > oldLevel && mounted) {
+      await showLevelUpOverlay(context, oldLevel: oldLevel, newLevel: newLevel);
+    }
   }
 
   @override
@@ -332,7 +365,7 @@ class _BotBattleScreenState extends ConsumerState<BotBattleScreen> with TickerPr
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🤖', style: TextStyle(fontSize: 16)),
+          const Text('ðŸ¤–', style: TextStyle(fontSize: 16)),
           const SizedBox(width: 8),
           Text(
             _botAnswered ? l10n.botAnswered : l10n.botThinking,
@@ -403,7 +436,7 @@ class _BotBattleScreenState extends ConsumerState<BotBattleScreen> with TickerPr
                 const Icon(Icons.cancel, color: AppColors.wrongAnswer, size: 18),
               if (isBotChoice && _answered) ...[
                 const SizedBox(width: 4),
-                const Text('🤖', style: TextStyle(fontSize: 14)),
+                const Text('ðŸ¤–', style: TextStyle(fontSize: 14)),
               ],
             ],
           ),
@@ -433,7 +466,7 @@ class _BotBattleScreenState extends ConsumerState<BotBattleScreen> with TickerPr
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  isWin ? '🏆' : (isDraw ? '🤝' : '🤖'),
+                  isWin ? 'ðŸ†' : (isDraw ? 'ðŸ¤' : 'ðŸ¤–'),
                   style: const TextStyle(fontSize: 72),
                 ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
                 const SizedBox(height: 16),

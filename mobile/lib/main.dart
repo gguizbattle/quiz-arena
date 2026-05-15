@@ -1,28 +1,34 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/constants/api_constants.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/locale_provider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
-  runApp(const ProviderScope(child: QuizArenaApp()));
+  await Supabase.initialize(
+    url: ApiConstants.supabaseUrl,
+    anonKey: ApiConstants.supabaseAnonKey,
+  );
+  runApp(const ProviderScope(child: GguizBattleApp()));
 }
 
-class QuizArenaApp extends ConsumerWidget {
-  const QuizArenaApp({super.key});
+class GguizBattleApp extends ConsumerWidget {
+  const GguizBattleApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
     return MaterialApp.router(
-      title: 'GLIC',
+      title: 'Gguiz Battle',
       theme: AppTheme.dark,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

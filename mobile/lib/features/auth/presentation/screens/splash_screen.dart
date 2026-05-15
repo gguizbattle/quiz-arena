@@ -1,35 +1,64 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gguiz_battle/app_localizations.dart';
+import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/gguiz_logo.dart';
+import '../../providers/auth_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  bool _navigated = false;
+
   @override
   void initState() {
     super.initState();
-    _navigate();
+    // Minimum splash gÃ¶zlÉ™mÉ™si 1.5s, sonra dÉ™rhal yoxla
+    Future.delayed(const Duration(milliseconds: 1500), _maybeNavigate);
+    // Maksimum 4s sonra fallback /login
+    Future.delayed(const Duration(seconds: 4), _forceNavigateToLogin);
   }
 
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(milliseconds: 2800));
-    if (mounted) context.go('/login');
+  void _maybeNavigate() {
+    if (_navigated || !mounted) return;
+    final authState = ref.read(authProvider);
+    final loggedIn = authState.whenOrNull(
+      data: (s) => s.status == AuthStatus.authenticated,
+    );
+    if (loggedIn == null) return; // hÉ™lÉ™ Loading
+    _navigated = true;
+    final target = loggedIn ? '/home' : '/login';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.go(target);
+    });
+  }
+
+  void _forceNavigateToLogin() {
+    if (_navigated || !mounted) return;
+    _navigated = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.go('/login');
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (_, __) => _maybeNavigate());
+
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // Background glow effects
           Positioned(
             top: -100,
             left: -100,
@@ -58,23 +87,21 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // GLIC Logo Icon
-                _GlicLogo()
+                const GguizLogo(size: 120)
                     .animate()
                     .scale(duration: 700.ms, curve: Curves.elasticOut)
                     .fadeIn(duration: 500.ms),
                 const SizedBox(height: 28),
-                // App Name
                 ShaderMask(
                   shaderCallback: (bounds) => const LinearGradient(
                     colors: [AppColors.primary, AppColors.cyan],
                   ).createShader(bounds),
                   child: Text(
-                    'GLIC',
+                    'GGUIZ BATTLE',
                     style: AppTextStyles.displayLarge.copyWith(
                       color: Colors.white,
-                      letterSpacing: 10,
-                      fontSize: 48,
+                      letterSpacing: 6,
+                      fontSize: 32,
                     ),
                   ),
                 )
@@ -83,17 +110,14 @@ class _SplashScreenState extends State<SplashScreen> {
                     .fadeIn(duration: 600.ms, delay: 300.ms),
                 const SizedBox(height: 8),
                 Text(
-                  'KNOW . PLAY . WIN',
+                  l10n.tagline,
                   style: AppTextStyles.bodyMedium.copyWith(
                     letterSpacing: 4,
                     color: AppColors.textMuted,
                     fontSize: 13,
                   ),
-                )
-                    .animate()
-                    .fadeIn(duration: 600.ms, delay: 700.ms),
+                ).animate().fadeIn(duration: 600.ms, delay: 700.ms),
                 const SizedBox(height: 80),
-                // Loading dots
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (i) {
@@ -115,55 +139,6 @@ class _SplashScreenState extends State<SplashScreen> {
                 ).animate().fadeIn(duration: 400.ms, delay: 900.ms),
               ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GlicLogo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 110,
-      height: 110,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4A2ADB), Color(0xFF7B5CFF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.5),
-            blurRadius: 40,
-            spreadRadius: 5,
-          ),
-          BoxShadow(
-            color: AppColors.cyan.withValues(alpha: 0.2),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Text(
-            'G',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.15),
-              fontSize: 90,
-              fontWeight: FontWeight.w900,
-              height: 1,
-            ),
-          ),
-          const Positioned(
-            right: 18,
-            top: 18,
-            child: Icon(Icons.bolt, color: Colors.white, size: 42),
           ),
         ],
       ),

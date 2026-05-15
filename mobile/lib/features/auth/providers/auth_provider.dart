@@ -1,25 +1,37 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+
+import '../../../core/constants/api_constants.dart';
 import '../../../core/providers/app_providers.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
+/// [cancelled] yalnız istifadəçinin sosial girişi ləğv etməsi üçündür — UI səssiz keçməlidir.
+/// Digər kodlar həmişə istifadəçiyə xəta mesajı göstərməlidir.
+enum AuthErrorCode { none, invalidCredentials, userExists, network, generic, cancelled }
+
 class AuthState {
   final AuthStatus status;
   final String? username;
-  final String? errorMessage;
+  final AuthErrorCode errorCode;
 
   const AuthState({
     this.status = AuthStatus.unknown,
     this.username,
-    this.errorMessage,
+    this.errorCode = AuthErrorCode.none,
   });
 
-  AuthState copyWith({AuthStatus? status, String? username, String? errorMessage}) {
+  String? get errorMessage => errorCode == AuthErrorCode.none ? null : errorCode.name;
+
+  AuthState copyWith({AuthStatus? status, String? username, AuthErrorCode? errorCode}) {
     return AuthState(
       status: status ?? this.status,
       username: username ?? this.username,
-      errorMessage: errorMessage,
+      errorCode: errorCode ?? AuthErrorCode.none,
     );
   }
 }
@@ -28,12 +40,11 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   @override
   Future<AuthState> build() async {
     final repo = ref.watch(authRepositoryProvider);
-    final loggedIn = await repo.isLoggedIn();
-    final storage = ref.watch(storageProvider);
-    final username = await storage.read(key: 'username');
+    // İlk açılışda Supabase session-u oxu
+    final user = repo.currentUser;
     return AuthState(
-      status: loggedIn ? AuthStatus.authenticated : AuthStatus.unauthenticated,
-      username: username,
+      status: user != null ? AuthStatus.authenticated : AuthStatus.unauthenticated,
+      username: (user?.userMetadata?['username'] as String?) ?? user?.email,
     );
   }
 
@@ -41,40 +52,159 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
     state = const AsyncLoading();
     try {
       final repo = ref.read(authRepositoryProvider);
-      await repo.login(identifier: identifier, password: password);
-      final storage = ref.read(storageProvider);
-      final username = await storage.read(key: 'username');
-      state = AsyncData(AuthState(status: AuthStatus.authenticated, username: username));
-    } on DioException catch (e) {
-      final msg = _parseError(e);
-      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorMessage: msg));
+      // Supabase Auth yalnız email/password dəstəkləyir — identifier email kimi qəbul olunur
+      final res = await repo.signInWithEmail(email: identifier, password: password);
+      state = AsyncData(AuthState(
+        status: AuthStatus.authenticated,
+        username: (res.user?.userMetadata?['username'] as String?) ?? res.user?.email,
+      ));
+    } on sb.AuthException catch (e) {
+      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorCode: _mapAuthError(e)));
+    } catch (_) {
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
     }
   }
 
-  Future<void> register(String username, String email, String password) async {
+  Future<AuthErrorCode> register(String username, String email, String password) async {
     state = const AsyncLoading();
     try {
       final repo = ref.read(authRepositoryProvider);
-      await repo.register(username: username, email: email, password: password);
-      state = AsyncData(AuthState(status: AuthStatus.authenticated, username: username));
-    } on DioException catch (e) {
-      final msg = _parseError(e);
-      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorMessage: msg));
+      final res = await repo.signUpWithEmail(
+        email: email,
+        password: password,
+        username: username,
+      );
+      if (res.user != null) {
+        state = AsyncData(AuthState(
+          status: AuthStatus.authenticated,
+          username: username,
+        ));
+        return AuthErrorCode.none;
+      }
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+      return AuthErrorCode.generic;
+    } on sb.AuthException catch (e) {
+      final code = _mapAuthError(e);
+      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorCode: code));
+      return code;
+    } catch (_) {
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+      return AuthErrorCode.generic;
     }
   }
 
   Future<void> logout() async {
     final repo = ref.read(authRepositoryProvider);
-    await repo.logout();
+    try { await GoogleSignIn().signOut(); } catch (_) {}
+    try { await FacebookAuth.instance.logOut(); } catch (_) {}
+    await repo.signOut();
     state = const AsyncData(AuthState(status: AuthStatus.unauthenticated));
   }
 
-  String _parseError(DioException e) {
-    final data = e.response?.data;
-    if (data is Map && data['message'] != null) {
-      final msg = data['message'];
-      return msg is List ? msg.first.toString() : msg.toString();
+  /// Native Google sign-in: google_sign_in plugin idToken alır,
+  /// sonra Supabase Auth-a signInWithIdToken ilə ötürülür.
+  /// `serverClientId` = Web Client ID (Supabase Auth bu ID ilə idToken-i yoxlayır).
+  Future<AuthErrorCode> signInWithGoogle({String? serverClientId}) async {
+    state = const AsyncLoading();
+    try {
+      final google = GoogleSignIn(
+        scopes: const ['email', 'profile'],
+        serverClientId: serverClientId ?? ApiConstants.googleWebClientId,
+      );
+      final account = await google.signIn();
+      if (account == null) {
+        debugPrint('[auth.google] cancelled by user');
+        state = AsyncData(const AuthState(status: AuthStatus.unauthenticated));
+        return AuthErrorCode.cancelled;
+      }
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      final accessToken = auth.accessToken;
+      debugPrint('[auth.google] idToken=${idToken != null}, accessToken=${accessToken != null}');
+      if (idToken == null) {
+        debugPrint('[auth.google] idToken null — Web Client ID/SHA-1 konfiqurasiyası yoxla');
+        state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+        return AuthErrorCode.generic;
+      }
+      final res = await ref.read(authRepositoryProvider).signInWithGoogleIdToken(
+            idToken: idToken,
+            accessToken: accessToken,
+          );
+      state = AsyncData(AuthState(
+        status: AuthStatus.authenticated,
+        username: (res.user?.userMetadata?['username'] as String?) ?? res.user?.email,
+      ));
+      return AuthErrorCode.none;
+    } on sb.AuthException catch (e) {
+      debugPrint('[auth.google] Supabase auth error: ${e.message}');
+      final code = _mapAuthError(e);
+      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorCode: code));
+      return code;
+    } catch (e, st) {
+      debugPrint('[auth.google] failed: $e\n$st');
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+      return AuthErrorCode.generic;
     }
-    return 'Xəta baş verdi. Yenidən cəhd edin.';
+  }
+
+  /// Apple ilə giriş (yalnız iOS/macOS).
+  Future<AuthErrorCode> signInWithApple() async {
+    state = const AsyncLoading();
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ]);
+      final token = credential.identityToken;
+      if (token == null) {
+        state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+        return AuthErrorCode.generic;
+      }
+      final res = await ref.read(authRepositoryProvider).signInWithAppleIdToken(idToken: token);
+      state = AsyncData(AuthState(
+        status: AuthStatus.authenticated,
+        username: (res.user?.userMetadata?['username'] as String?) ?? res.user?.email,
+      ));
+      return AuthErrorCode.none;
+    } on SignInWithAppleAuthorizationException catch (e) {
+      debugPrint('[auth.apple] cancelled/denied: ${e.code}');
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated));
+      return AuthErrorCode.cancelled;
+    } on sb.AuthException catch (e) {
+      debugPrint('[auth.apple] Supabase auth error: ${e.message}');
+      final code = _mapAuthError(e);
+      state = AsyncData(AuthState(status: AuthStatus.unauthenticated, errorCode: code));
+      return code;
+    } catch (e, st) {
+      debugPrint('[auth.apple] failed: $e\n$st');
+      state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
+      return AuthErrorCode.generic;
+    }
+  }
+
+  /// Facebook girişi: idToken Supabase-də dəstəkləmir, OAuth flow lazımdır.
+  /// Hələlik FacebookAuth ilə accessToken alınır, backend tərəfdə verify edilməlidir.
+  /// Sadəlik üçün hələlik unimplemented — istifadəçiyə UI-da gizlədəcəyik.
+  Future<AuthErrorCode> signInWithFacebook() async {
+    debugPrint('[auth.facebook] Supabase signInWithIdToken Facebook-u dəstəkləmir');
+    return AuthErrorCode.generic;
+  }
+
+  AuthErrorCode _mapAuthError(sb.AuthException e) {
+    final msg = e.message.toLowerCase();
+    if (msg.contains('invalid login credentials') ||
+        msg.contains('invalid credentials') ||
+        msg.contains('email not confirmed')) {
+      return AuthErrorCode.invalidCredentials;
+    }
+    if (msg.contains('user already registered') ||
+        msg.contains('already registered') ||
+        msg.contains('duplicate')) {
+      return AuthErrorCode.userExists;
+    }
+    if (msg.contains('network') || msg.contains('timeout')) {
+      return AuthErrorCode.network;
+    }
+    return AuthErrorCode.generic;
   }
 }

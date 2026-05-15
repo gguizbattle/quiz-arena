@@ -1,5 +1,5 @@
-name: quiz_arena
-description: Quiz Arena - Compete, Learn, Win
+name: gguiz_battle
+description: Gguiz Battle - Compete, Learn, Win
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -8,6 +8,8 @@ environment:
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.8
 
@@ -29,18 +31,25 @@ dependencies:
   # Realtime
   socket_io_client: ^3.0.0
 
+  # OAuth (social login) + Supabase Auth
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.4
+  flutter_facebook_auth: ^7.1.1
+  supabase_flutter: ^2.8.0
+
   # UI
   google_fonts: ^6.2.1
   flutter_animate: ^4.5.2
   lottie: ^3.1.3
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
+  confetti: ^0.8.0
 
   # Utils
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
   equatable: ^2.0.7
-  intl: ^0.19.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -51,8 +60,28 @@ dev_dependencies:
   json_serializable: ^6.9.2
   riverpod_generator: ^2.6.1
   retrofit_generator: ^9.1.5
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.3
+  image: ^4.3.0
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0F1020"
+  adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+
+flutter_native_splash:
+  color: "#0F1020"
+  android: true
+  ios: false
+  android_12:
+    color: "#0F1020"
+    icon_background_color: "#0F1020"
 
 flutter:
+  generate: true
   uses-material-design: true
   assets:
     - assets/images/

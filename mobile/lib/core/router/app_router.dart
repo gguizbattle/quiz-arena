@@ -1,5 +1,5 @@
-﻿import 'package:flutter/material.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:flutter/material.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -21,12 +21,11 @@ import '../../features/auth/providers/auth_provider.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
+      final authState = ref.read(authProvider);
       final isAuthenticated = authState.whenOrNull(
         data: (s) => s.status == AuthStatus.authenticated,
       );

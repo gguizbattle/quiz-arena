@@ -53,6 +53,28 @@ export class SocialAuthService {
     }
   }
 
+  /// Google access_token ilə userinfo endpoint-i çağırıb istifadəçi profilini al.
+  /// Android-də idToken çıxarmaq üçün serverClientId konfiqurə olunmadıqda istifadə olunur.
+  async verifyGoogleAccessToken(accessToken: string): Promise<SocialProfile> {
+    if (!accessToken) throw new BadRequestException('access_token_required');
+    try {
+      const r = await axios.get('https://openidconnect.googleapis.com/v1/userinfo', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        timeout: 10000,
+      });
+      const data = r.data as { sub: string; email?: string; name?: string; picture?: string };
+      if (!data?.sub) throw new Error('no_sub');
+      return {
+        providerUserId: data.sub,
+        email: data.email,
+        name: data.name,
+        picture: data.picture,
+      };
+    } catch (e) {
+      throw new UnauthorizedException('invalid_google_token');
+    }
+  }
+
   /// Apple identity token-i Apple-ın JWKS-i ilə təsdiqlə.
   async verifyApple(identityToken: string): Promise<SocialProfile> {
     if (!identityToken) throw new BadRequestException('identity_token_required');
@@ -101,29 +123,45 @@ export class SocialAuthService {
 
   /// Provider və token verildikdə: tokeni təsdiqlə, user-i tap və ya yarat,
   /// JWT qaytar. Eyni provider ID = eyni hesab (idempotent).
-  async loginWith(provider: Provider, token: string) {
+  /// [opts.googleAccessToken] true olduqda Google üçün userinfo endpoint istifadə olunur.
+  async loginWith(
+    provider: Provider,
+    token: string,
+    opts?: { googleAccessToken?: boolean },
+  ) {
     let profile: SocialProfile;
-    if (provider === 'google') profile = await this.verifyGoogle(token);
-    else if (provider === 'apple') profile = await this.verifyApple(token);
-    else if (provider === 'facebook') profile = await this.verifyFacebook(token);
-    else throw new BadRequestException('unknown_provider');
+    if (provider === 'google') {
+      profile = opts?.googleAccessToken
+        ? await this.verifyGoogleAccessToken(token)
+        : await this.verifyGoogle(token);
+    } else if (provider === 'apple') {
+      profile = await this.verifyApple(token);
+    } else if (provider === 'facebook') {
+      profile = await this.verifyFacebook(token);
+    } else {
+      throw new BadRequestException('unknown_provider');
+    }
 
-    const user = await this.upsertUser(provider, profile);
-    return this.issueTokens(user);
+    const { user, isNew, autoUsername } = await this.upsertUser(provider, profile);
+    return this.issueTokens(user, { isNew, autoUsername, email: profile.email, name: profile.name, picture: profile.picture });
   }
 
-  private async upsertUser(provider: Provider, profile: SocialProfile): Promise<User> {
+  private async upsertUser(
+    provider: Provider,
+    profile: SocialProfile,
+  ): Promise<{ user: User; isNew: boolean; autoUsername: boolean }> {
     const idCol = provider === 'google' ? 'google_id' : provider === 'apple' ? 'apple_id' : 'facebook_id';
     // 1) Provider ID-ə görə tap
     let user = await this.usersRepo.findOne({ where: { [idCol]: profile.providerUserId } as any });
-    if (user) return user;
+    if (user) return { user, isNew: false, autoUsername: false };
 
     // 2) Eyni email başqa provider-də qeydiyyatdadırsa, hesabı linkləyirik
     if (profile.email) {
       user = await this.usersRepo.findOne({ where: { email: profile.email } });
       if (user) {
         await this.usersRepo.update(user.id, { [idCol]: profile.providerUserId, email_verified: true } as any);
-        return (await this.usersRepo.findOne({ where: { id: user.id } }))!;
+        const refreshed = (await this.usersRepo.findOne({ where: { id: user.id } }))!;
+        return { user: refreshed, isNew: false, autoUsername: false };
       }
     }
 
@@ -136,7 +174,8 @@ export class SocialAuthService {
       email_verified: true,
       [idCol]: profile.providerUserId,
     } as any);
-    return await this.usersRepo.save(created as any) as User;
+    const saved = await this.usersRepo.save(created as any) as User;
+    return { user: saved, isNew: true, autoUsername: true };
   }
 
   private async deriveUniqueUsername(name?: string, email?: string): Promise<string> {
@@ -155,7 +194,10 @@ export class SocialAuthService {
     return `${base}_${Date.now().toString().slice(-6)}`;
   }
 
-  private async issueTokens(user: User) {
+  private async issueTokens(
+    user: User,
+    extra?: { isNew?: boolean; autoUsername?: boolean; email?: string; name?: string; picture?: string },
+  ) {
     const payload = { sub: user.id, username: user.username };
     const access = this.jwt.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
@@ -170,10 +212,20 @@ export class SocialAuthService {
     return {
       access_token: access,
       refresh_token: refresh,
+      is_new: extra?.isNew ?? false,
+      auto_username: extra?.autoUsername ?? false,
+      social_profile: extra?.email || extra?.name || extra?.picture
+        ? {
+            email: extra?.email ?? null,
+            name: extra?.name ?? null,
+            picture: extra?.picture ?? null,
+          }
+        : null,
       user: {
         id: user.id,
         username: user.username,
         email: user.email,
+        avatar: user.avatar,
         xp: user.xp,
         level: user.level,
         coins: user.coins,

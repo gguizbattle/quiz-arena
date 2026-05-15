@@ -1,11 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'api_endpoints.dart';
 
 class ApiClient {
   ApiClient._();
 
-  static Dio create(FlutterSecureStorage storage) {
+  static Dio create(SupabaseClient supabase) {
     final dio = Dio(BaseOptions(
       baseUrl: ApiEndpoints.baseUrl,
       connectTimeout: const Duration(seconds: 10),
@@ -13,20 +13,21 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
     ));
 
-    dio.interceptors.add(_AuthInterceptor(dio, storage));
+    dio.interceptors.add(_SupabaseAuthInterceptor(supabase));
     return dio;
   }
 }
 
-class _AuthInterceptor extends QueuedInterceptorsWrapper {
-  final Dio _dio;
-  final FlutterSecureStorage _storage;
+/// Hər HTTP sorğusuna cari Supabase JWT-ni `Authorization` başlığı kimi qoşur.
+/// Token müddəti bitsə Supabase SDK avtomatik refresh edir — burada əlavə iş lazım deyil.
+class _SupabaseAuthInterceptor extends QueuedInterceptorsWrapper {
+  final SupabaseClient _supabase;
 
-  _AuthInterceptor(this._dio, this._storage);
+  _SupabaseAuthInterceptor(this._supabase);
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final token = await _storage.read(key: 'access_token');
+    final token = _supabase.auth.currentSession?.accessToken;
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -37,30 +38,18 @@ class _AuthInterceptor extends QueuedInterceptorsWrapper {
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.response?.statusCode == 401) {
       try {
-        final refreshToken = await _storage.read(key: 'refresh_token');
-        if (refreshToken == null) return handler.next(err);
-
-        final userId = await _storage.read(key: 'user_id');
-        final response = await _dio.post(
-          ApiEndpoints.refresh,
-          data: {'user_id': userId, 'refresh_token': refreshToken},
-          options: Options(headers: {'Authorization': null}),
-        );
-
-        final newAccess = response.data['access_token'] as String;
-        final newRefresh = response.data['refresh_token'] as String;
-        await _storage.write(key: 'access_token', value: newAccess);
-        await _storage.write(key: 'refresh_token', value: newRefresh);
-
-        err.requestOptions.headers['Authorization'] = 'Bearer $newAccess';
-        final retry = await _dio.fetch(err.requestOptions);
-        return handler.resolve(retry);
+        await _supabase.auth.refreshSession();
+        final newToken = _supabase.auth.currentSession?.accessToken;
+        if (newToken != null) {
+          err.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+          final dio = Dio();
+          final retry = await dio.fetch(err.requestOptions);
+          return handler.resolve(retry);
+        }
       } catch (_) {
-        await _storage.deleteAll();
-        handler.next(err);
+        await _supabase.auth.signOut();
       }
-    } else {
-      handler.next(err);
     }
+    handler.next(err);
   }
 }

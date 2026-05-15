@@ -1,4 +1,4 @@
-package com.quizarena.quiz_arena
+package com.gguizbattle.gguiz_battle
 
 import io.flutter.embedding.android.FlutterActivity
 

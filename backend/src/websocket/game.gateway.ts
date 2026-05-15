@@ -42,8 +42,17 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.waitingPlayers = this.waitingPlayers.filter(p => p.socketId !== client.id);
     const matchId = this.socketToMatch.get(client.id);
     if (matchId) {
-      this.server.to(matchId).emit('opponent:disconnected');
+      // Yalnız qalan oyunçuya bildir (özünə yox)
+      client.to(matchId).emit('opponent:disconnected');
       this.socketToMatch.delete(client.id);
+      // Match-i təmizlə — qalan oyunçu match:complete göndərə bilməz
+      const match = this.activeMatches.get(matchId);
+      if (match) {
+        for (const p of match.players) {
+          this.socketToMatch.delete(p.socketId);
+        }
+        this.activeMatches.delete(matchId);
+      }
     }
     console.log(`[WS] Client disconnected: ${client.id}`);
   }
@@ -53,7 +62,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { userId: string; username: string; elo: number },
   ) {
-    if (this.waitingPlayers.find(p => p.userId === data.userId)) return;
+    // Eyni istifadəçi artıq oyundadır
+    const inMatch = Array.from(this.activeMatches.values()).some(m =>
+      m.players.some(p => p.userId === data.userId),
+    );
+    if (inMatch) {
+      client.emit('match:error', { message: 'ALREADY_IN_MATCH' });
+      return;
+    }
+
+    // Eyni istifadəçi köhnə socket ilə queue-dadırsa — köhnəni təmizlə
+    const existing = this.waitingPlayers.find(p => p.userId === data.userId);
+    if (existing) {
+      if (existing.socketId === client.id) {
+        // Eyni socket: təkrar qoşulma, yalnız waiting bildirişi
+        client.emit('match:waiting');
+        return;
+      }
+      // Fərqli socket: köhnəni at, yenisi ilə davam et
+      this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== data.userId);
+    }
 
     const opponent = this.waitingPlayers.find(
       p => p.userId !== data.userId && Math.abs(p.elo - data.elo) <= 200,
@@ -92,7 +120,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       timeMs: number;
     },
   ) {
-    this.server.to(data.matchId).emit('answer:received', {
+    // Yalnız rəqibə göndər (özünə echo yox)
+    client.to(data.matchId).emit('answer:received', {
       socketId: client.id,
       questionIndex: data.questionIndex,
       answer: data.answer,

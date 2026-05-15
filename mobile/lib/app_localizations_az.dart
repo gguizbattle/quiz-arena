@@ -39,7 +39,7 @@ class AppLocalizationsAz extends AppLocalizations {
   String get createAccountTitle => 'Hesab Yarat';
 
   @override
-  String get joinBattleArena => 'GLIC döyüş arenasına qoşul';
+  String get joinBattleArena => 'Gguiz Battle döyüş arenasına qoşul';
 
   @override
   String get usernameField => 'İstifadəçi adı';
@@ -112,6 +112,52 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get mission3 => '10 sualı düzgün cavabla';
+
+  @override
+  String missionPlayMatch(int count) {
+    return '$count matç oyna';
+  }
+
+  @override
+  String missionWinMatch(int count) {
+    return '$count matç qazan';
+  }
+
+  @override
+  String missionAnswerCorrect(int count) {
+    return '$count sualı düzgün cavabla';
+  }
+
+  @override
+  String missionFastAnswer(int count) {
+    return '5 saniyə ərzində $count düzgün cavab ver';
+  }
+
+  @override
+  String missionWinStreak(int count) {
+    return '$count ardıcıl qələbə qazan';
+  }
+
+  @override
+  String missionRefreshIn(String time) {
+    return 'Yenilənir: $time';
+  }
+
+  @override
+  String get missionClaim => 'Al';
+
+  @override
+  String get missionClaimed => 'Alındı';
+
+  @override
+  String missionRewardXp(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String missionRewardCoins(int coins) {
+    return '+$coins sikkə';
+  }
 
   @override
   String get leaderboard => 'Reytinq';
@@ -221,6 +267,62 @@ class AppLocalizationsAz extends AppLocalizations {
   String get cancelSearch => 'Ləğv et';
 
   @override
+  String get noOpponentFoundYet => 'Hələ rəqib tapılmır';
+
+  @override
+  String get playWithBotInstead => 'Bot ilə oyna';
+
+  @override
+  String get maxLevelBadge => 'Maks level';
+
+  @override
+  String get levelUpTitle => 'YENİ SƏVİYYƏ!';
+
+  @override
+  String levelUpSubtitle(int level) {
+    return 'Səviyyə $level-ə yüksəldiniz!';
+  }
+
+  @override
+  String get continueButton => 'DAVAM ET';
+
+  @override
+  String get levelTier1 => 'YENİ BAŞLAYAN';
+
+  @override
+  String get levelTier2 => 'TƏCRÜBƏLİ';
+
+  @override
+  String get levelTier3 => 'BİLİCİ';
+
+  @override
+  String get levelTier4 => 'USTA';
+
+  @override
+  String get levelTier5 => 'EKSPERT';
+
+  @override
+  String get levelTier6 => 'ÇEMPİON';
+
+  @override
+  String get levelTier7 => 'ƏFSANƏVİ';
+
+  @override
+  String get orContinueWith => 'VƏ YA';
+
+  @override
+  String get continueWithGoogle => 'Google ilə davam et';
+
+  @override
+  String get continueWithApple => 'Apple ilə davam et';
+
+  @override
+  String get continueWithFacebook => 'Facebook ilə davam et';
+
+  @override
+  String get socialLoginFailed => 'Giriş alınmadı. Yenidən cəhd edin.';
+
+  @override
   String get coinBalanceTitle => 'Sikkə Balansı';
 
   @override
@@ -237,6 +339,49 @@ class AppLocalizationsAz extends AppLocalizations {
 
   @override
   String get noNotifications => 'Hələ bildirişiniz yoxdur';
+
+  @override
+  String get errorInvalidCredentials => 'İstifadəçi adı və ya şifrə yanlışdır';
+
+  @override
+  String get errorUserExists =>
+      'Bu istifadəçi adı və ya e-poçt artıq qeydiyyatdan keçib';
+
+  @override
+  String get errorNetwork =>
+      'Server bağlantısı yoxdur. İnternet bağlantınızı yoxlayın';
+
+  @override
+  String get errorGeneric => 'Xəta baş verdi. Yenidən cəhd edin';
+
+  @override
+  String get confirmPasswordField => 'Şifrəni təkrar yaz';
+
+  @override
+  String get passwordsDoNotMatch => 'Şifrələr uyğun gəlmir';
+
+  @override
+  String get otpTitle => 'E-poçt təsdiqi';
+
+  @override
+  String otpSubtitle(String email) {
+    return '$email ünvanına 6 rəqəmli kod göndərdik';
+  }
+
+  @override
+  String get otpInputHint => 'Təsdiq kodu';
+
+  @override
+  String get otpVerifyButton => 'TƏSDİQ ET';
+
+  @override
+  String get otpResendButton => 'Kodu yenidən göndər';
+
+  @override
+  String get otpInvalid => 'Yanlış və ya köhnəlmiş kod';
+
+  @override
+  String get otpResent => 'Kod göndərildi';
 
   @override
   String get winsLabel => 'Qələbə';
@@ -257,6 +402,15 @@ class AppLocalizationsAz extends AppLocalizations {
   String winsText(int count) {
     return '$count qələbə';
   }
+
+  @override
+  String get leaderboardEmpty => 'Hələ heç bir oyunçu yoxdur';
+
+  @override
+  String get leaderboardEmptyHint => 'Birinci olmaq üçün oyna!';
+
+  @override
+  String get leaderboardError => 'Reytinq yüklənmədi';
 
   @override
   String scoreLabel(int score) {
@@ -453,6 +607,18 @@ class AppLocalizationsAz extends AppLocalizations {
   String get botWon => 'Bot Qazandı 🤖';
 
   @override
+  String get opponentThinking => 'düşünür...';
+
+  @override
+  String get opponentAnswered => 'cavabladı ✓';
+
+  @override
+  String get opponentWon => 'Rəqib Qazandı';
+
+  @override
+  String get youLost => 'Siz Uduzdunuz 💔';
+
+  @override
   String get drawResult => 'Bərabərlik! 🤝';
 
   @override
@@ -476,4 +642,16 @@ class AppLocalizationsAz extends AppLocalizations {
   String coinsEarned(int coins) {
     return '+$coins Sikkə';
   }
+
+  @override
+  String get profileLoadFailed => 'Profil yüklənmədi';
+
+  @override
+  String get opponentDisconnectedMessage => 'Rəqib bağlantını kəsdi';
+
+  @override
+  String get alreadyInMatchMessage => 'Artıq bir matçdasınız';
+
+  @override
+  String get connectionLostMessage => 'Bağlantı kəsildi';
 }

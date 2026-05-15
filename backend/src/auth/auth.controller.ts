@@ -52,8 +52,14 @@ export class AuthController {
 
   @Post('social/google')
   @HttpCode(200)
-  google(@Body() body: { id_token: string }) {
-    return this.socialAuth.loginWith('google', body.id_token);
+  google(@Body() body: { id_token?: string; access_token?: string }) {
+    if (body.id_token) {
+      return this.socialAuth.loginWith('google', body.id_token);
+    }
+    if (body.access_token) {
+      return this.socialAuth.loginWith('google', body.access_token, { googleAccessToken: true });
+    }
+    return this.socialAuth.loginWith('google', ''); // throw BadRequest
   }
 
   @Post('social/apple')

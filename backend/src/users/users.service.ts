@@ -22,6 +22,14 @@ export class UsersService {
     return this.findById(id);
   }
 
+  /// Username dəyişdirir. Başqa istifadəçidə tutulubsa Error('username_taken') atır.
+  async changeUsername(id: string, username: string): Promise<User> {
+    const existing = await this.repo.findOne({ where: { username } });
+    if (existing && existing.id !== id) throw new Error('username_taken');
+    await this.repo.update(id, { username });
+    return this.findById(id);
+  }
+
   async getLeaderboardPosition(id: string) {
     const user = await this.findById(id);
     return { elo: user.elo, wins: user.wins, losses: user.losses };

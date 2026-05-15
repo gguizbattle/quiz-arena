@@ -1,72 +1,124 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../home/providers/user_provider.dart';
+import '../../data/leaderboard_repository.dart';
+import '../../providers/leaderboard_provider.dart';
 
-class LeaderboardScreen extends StatelessWidget {
+class LeaderboardScreen extends ConsumerWidget {
   const LeaderboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final players = [
-      ('xXProQuizXx', 2100, 142, '🥇'),
-      ('NightOwl99', 1980, 127, '🥈'),
-      ('BrainMaster', 1875, 98, '🥉'),
-      ('QuizKing', 1820, 89, '4'),
-      ('SmartAlex', 1770, 76, '5'),
-      ('ThinkFast', 1720, 71, '6'),
-      ('QuizWiz', 1680, 65, '7'),
-      ('Player123', 1425, 47, '8'),
-    ];
+    final entriesAsync = ref.watch(leaderboardProvider);
+    final myId = ref.watch(userProfileProvider).valueOrNull?.id;
 
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.gradientBackground),
         child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    Text(l10n.leaderboardTitle, style: AppTextStyles.headlineLarge).animate().fadeIn(),
-                    const SizedBox(height: 20),
-                    _buildTopThree(players.take(3).toList()),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: players.length - 3,
-                  itemBuilder: (_, i) {
-                    final p = players[i + 3];
-                    final isMe = p.$1 == 'Player123';
-                    return _buildRow(l10n, p.$4, p.$1, p.$2, p.$3, isMe, i);
-                  },
-                ),
-              ),
-            ],
+          child: entriesAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => Center(
+              child: Text(l10n.leaderboardError, style: AppTextStyles.bodyMedium),
+            ),
+            data: (players) {
+              if (players.isEmpty) return _buildEmpty(l10n);
+              return _buildLoaded(l10n, players, myId);
+            },
           ),
         ),
       ),
     );
   }
 
-  Widget _buildTopThree(List players) {
+  Widget _buildEmpty(AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Text(l10n.leaderboardTitle, style: AppTextStyles.headlineLarge).animate().fadeIn(),
+          const Spacer(),
+          const Icon(Icons.emoji_events_outlined, size: 72, color: AppColors.textMuted),
+          const SizedBox(height: 16),
+          Text(l10n.leaderboardEmpty, style: AppTextStyles.titleMedium),
+          const SizedBox(height: 6),
+          Text(l10n.leaderboardEmptyHint, style: AppTextStyles.bodySmall.copyWith(color: AppColors.textMuted)),
+          const Spacer(),
+        ],
+      ).animate().fadeIn(),
+    );
+  }
+
+  Widget _buildLoaded(AppLocalizations l10n, List<LeaderboardEntry> players, String? myId) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Text(l10n.leaderboardTitle, style: AppTextStyles.headlineLarge).animate().fadeIn(),
+              const SizedBox(height: 20),
+              if (players.length >= 3)
+                _buildTopThree(players.take(3).toList())
+              else
+                _buildShortTop(players),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: players.length > 3 ? players.length - 3 : 0,
+            itemBuilder: (_, i) {
+              final p = players[i + 3];
+              final isMe = p.id == myId;
+              return _buildRow(l10n, '${i + 4}', p, isMe, i);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildShortTop(List<LeaderboardEntry> players) {
+    return Column(
+      children: players.asMap().entries.map((e) {
+        final medal = e.key == 0 ? 'ðŸ¥‡' : (e.key == 1 ? 'ðŸ¥ˆ' : 'ðŸ¥‰');
+        final color = e.key == 0
+            ? AppColors.rankGold
+            : (e.key == 1 ? AppColors.rankSilver : AppColors.rankBronze);
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Row(
+            children: [
+              Text(medal, style: const TextStyle(fontSize: 22)),
+              const SizedBox(width: 10),
+              Expanded(child: Text(e.value.username, style: AppTextStyles.titleMedium.copyWith(color: color))),
+              Text('${e.value.elo}', style: AppTextStyles.labelLarge.copyWith(color: color)),
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildTopThree(List<LeaderboardEntry> players) {
     return SizedBox(
       height: 160,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          _buildPodium(players[1].$1, players[1].$2, '🥈', 110, AppColors.rankSilver),
+          _buildPodium(players[1].username, players[1].elo, 'ðŸ¥ˆ', 110, AppColors.rankSilver),
           const SizedBox(width: 8),
-          _buildPodium(players[0].$1, players[0].$2, '🥇', 150, AppColors.rankGold),
+          _buildPodium(players[0].username, players[0].elo, 'ðŸ¥‡', 150, AppColors.rankGold),
           const SizedBox(width: 8),
-          _buildPodium(players[2].$1, players[2].$2, '🥉', 90, AppColors.rankBronze),
+          _buildPodium(players[2].username, players[2].elo, 'ðŸ¥‰', 90, AppColors.rankBronze),
         ],
       ),
     ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2);
@@ -93,7 +145,7 @@ class LeaderboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(AppLocalizations l10n, String rank, String name, int elo, int wins, bool isMe, int index) {
+  Widget _buildRow(AppLocalizations l10n, String rank, LeaderboardEntry p, bool isMe, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -106,14 +158,14 @@ class LeaderboardScreen extends StatelessWidget {
         children: [
           SizedBox(width: 28, child: Text(rank, style: AppTextStyles.titleMedium, textAlign: TextAlign.center)),
           const SizedBox(width: 12),
-          CircleAvatar(radius: 18, backgroundColor: AppColors.surfaceLight, child: Text(name[0], style: const TextStyle(color: AppColors.textPrimary))),
+          CircleAvatar(radius: 18, backgroundColor: AppColors.surfaceLight, child: Text(p.username[0], style: const TextStyle(color: AppColors.textPrimary))),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$name${isMe ? ' ${l10n.youInParens}' : ''}', style: AppTextStyles.titleMedium.copyWith(color: isMe ? AppColors.primaryLight : AppColors.textPrimary)),
-                Text(l10n.winsText(wins), style: AppTextStyles.bodySmall),
+                Text('${p.username}${isMe ? ' ${l10n.youInParens}' : ''}', style: AppTextStyles.titleMedium.copyWith(color: isMe ? AppColors.primaryLight : AppColors.textPrimary)),
+                Text(l10n.winsText(p.wins), style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -121,7 +173,7 @@ class LeaderboardScreen extends StatelessWidget {
             children: [
               const Icon(Icons.military_tech, color: AppColors.rankGold, size: 16),
               const SizedBox(width: 4),
-              Text('$elo', style: AppTextStyles.labelLarge.copyWith(color: AppColors.rankGold)),
+              Text('${p.elo}', style: AppTextStyles.labelLarge.copyWith(color: AppColors.rankGold)),
             ],
           ),
         ],

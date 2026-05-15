@@ -165,7 +165,7 @@ abstract class AppLocalizations {
   /// No description provided for @joinBattleArena.
   ///
   /// In az, this message translates to:
-  /// **'GLIC döyüş arenasına qoşul'**
+  /// **'Gguiz Battle döyüş arenasına qoşul'**
   String get joinBattleArena;
 
   /// No description provided for @usernameField.
@@ -311,6 +311,66 @@ abstract class AppLocalizations {
   /// In az, this message translates to:
   /// **'10 sualı düzgün cavabla'**
   String get mission3;
+
+  /// No description provided for @missionPlayMatch.
+  ///
+  /// In az, this message translates to:
+  /// **'{count} matç oyna'**
+  String missionPlayMatch(int count);
+
+  /// No description provided for @missionWinMatch.
+  ///
+  /// In az, this message translates to:
+  /// **'{count} matç qazan'**
+  String missionWinMatch(int count);
+
+  /// No description provided for @missionAnswerCorrect.
+  ///
+  /// In az, this message translates to:
+  /// **'{count} sualı düzgün cavabla'**
+  String missionAnswerCorrect(int count);
+
+  /// No description provided for @missionFastAnswer.
+  ///
+  /// In az, this message translates to:
+  /// **'5 saniyə ərzində {count} düzgün cavab ver'**
+  String missionFastAnswer(int count);
+
+  /// No description provided for @missionWinStreak.
+  ///
+  /// In az, this message translates to:
+  /// **'{count} ardıcıl qələbə qazan'**
+  String missionWinStreak(int count);
+
+  /// No description provided for @missionRefreshIn.
+  ///
+  /// In az, this message translates to:
+  /// **'Yenilənir: {time}'**
+  String missionRefreshIn(String time);
+
+  /// No description provided for @missionClaim.
+  ///
+  /// In az, this message translates to:
+  /// **'Al'**
+  String get missionClaim;
+
+  /// No description provided for @missionClaimed.
+  ///
+  /// In az, this message translates to:
+  /// **'Alındı'**
+  String get missionClaimed;
+
+  /// No description provided for @missionRewardXp.
+  ///
+  /// In az, this message translates to:
+  /// **'+{xp} XP'**
+  String missionRewardXp(int xp);
+
+  /// No description provided for @missionRewardCoins.
+  ///
+  /// In az, this message translates to:
+  /// **'+{coins} sikkə'**
+  String missionRewardCoins(int coins);
 
   /// No description provided for @leaderboard.
   ///
@@ -522,6 +582,114 @@ abstract class AppLocalizations {
   /// **'Ləğv et'**
   String get cancelSearch;
 
+  /// No description provided for @noOpponentFoundYet.
+  ///
+  /// In az, this message translates to:
+  /// **'Hələ rəqib tapılmır'**
+  String get noOpponentFoundYet;
+
+  /// No description provided for @playWithBotInstead.
+  ///
+  /// In az, this message translates to:
+  /// **'Bot ilə oyna'**
+  String get playWithBotInstead;
+
+  /// No description provided for @maxLevelBadge.
+  ///
+  /// In az, this message translates to:
+  /// **'Maks level'**
+  String get maxLevelBadge;
+
+  /// No description provided for @levelUpTitle.
+  ///
+  /// In az, this message translates to:
+  /// **'YENİ SƏVİYYƏ!'**
+  String get levelUpTitle;
+
+  /// No description provided for @levelUpSubtitle.
+  ///
+  /// In az, this message translates to:
+  /// **'Səviyyə {level}-ə yüksəldiniz!'**
+  String levelUpSubtitle(int level);
+
+  /// No description provided for @continueButton.
+  ///
+  /// In az, this message translates to:
+  /// **'DAVAM ET'**
+  String get continueButton;
+
+  /// No description provided for @levelTier1.
+  ///
+  /// In az, this message translates to:
+  /// **'YENİ BAŞLAYAN'**
+  String get levelTier1;
+
+  /// No description provided for @levelTier2.
+  ///
+  /// In az, this message translates to:
+  /// **'TƏCRÜBƏLİ'**
+  String get levelTier2;
+
+  /// No description provided for @levelTier3.
+  ///
+  /// In az, this message translates to:
+  /// **'BİLİCİ'**
+  String get levelTier3;
+
+  /// No description provided for @levelTier4.
+  ///
+  /// In az, this message translates to:
+  /// **'USTA'**
+  String get levelTier4;
+
+  /// No description provided for @levelTier5.
+  ///
+  /// In az, this message translates to:
+  /// **'EKSPERT'**
+  String get levelTier5;
+
+  /// No description provided for @levelTier6.
+  ///
+  /// In az, this message translates to:
+  /// **'ÇEMPİON'**
+  String get levelTier6;
+
+  /// No description provided for @levelTier7.
+  ///
+  /// In az, this message translates to:
+  /// **'ƏFSANƏVİ'**
+  String get levelTier7;
+
+  /// No description provided for @orContinueWith.
+  ///
+  /// In az, this message translates to:
+  /// **'VƏ YA'**
+  String get orContinueWith;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In az, this message translates to:
+  /// **'Google ilə davam et'**
+  String get continueWithGoogle;
+
+  /// No description provided for @continueWithApple.
+  ///
+  /// In az, this message translates to:
+  /// **'Apple ilə davam et'**
+  String get continueWithApple;
+
+  /// No description provided for @continueWithFacebook.
+  ///
+  /// In az, this message translates to:
+  /// **'Facebook ilə davam et'**
+  String get continueWithFacebook;
+
+  /// No description provided for @socialLoginFailed.
+  ///
+  /// In az, this message translates to:
+  /// **'Giriş alınmadı. Yenidən cəhd edin.'**
+  String get socialLoginFailed;
+
   /// No description provided for @coinBalanceTitle.
   ///
   /// In az, this message translates to:
@@ -558,6 +726,84 @@ abstract class AppLocalizations {
   /// **'Hələ bildirişiniz yoxdur'**
   String get noNotifications;
 
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In az, this message translates to:
+  /// **'İstifadəçi adı və ya şifrə yanlışdır'**
+  String get errorInvalidCredentials;
+
+  /// No description provided for @errorUserExists.
+  ///
+  /// In az, this message translates to:
+  /// **'Bu istifadəçi adı və ya e-poçt artıq qeydiyyatdan keçib'**
+  String get errorUserExists;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In az, this message translates to:
+  /// **'Server bağlantısı yoxdur. İnternet bağlantınızı yoxlayın'**
+  String get errorNetwork;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In az, this message translates to:
+  /// **'Xəta baş verdi. Yenidən cəhd edin'**
+  String get errorGeneric;
+
+  /// No description provided for @confirmPasswordField.
+  ///
+  /// In az, this message translates to:
+  /// **'Şifrəni təkrar yaz'**
+  String get confirmPasswordField;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In az, this message translates to:
+  /// **'Şifrələr uyğun gəlmir'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @otpTitle.
+  ///
+  /// In az, this message translates to:
+  /// **'E-poçt təsdiqi'**
+  String get otpTitle;
+
+  /// No description provided for @otpSubtitle.
+  ///
+  /// In az, this message translates to:
+  /// **'{email} ünvanına 6 rəqəmli kod göndərdik'**
+  String otpSubtitle(String email);
+
+  /// No description provided for @otpInputHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Təsdiq kodu'**
+  String get otpInputHint;
+
+  /// No description provided for @otpVerifyButton.
+  ///
+  /// In az, this message translates to:
+  /// **'TƏSDİQ ET'**
+  String get otpVerifyButton;
+
+  /// No description provided for @otpResendButton.
+  ///
+  /// In az, this message translates to:
+  /// **'Kodu yenidən göndər'**
+  String get otpResendButton;
+
+  /// No description provided for @otpInvalid.
+  ///
+  /// In az, this message translates to:
+  /// **'Yanlış və ya köhnəlmiş kod'**
+  String get otpInvalid;
+
+  /// No description provided for @otpResent.
+  ///
+  /// In az, this message translates to:
+  /// **'Kod göndərildi'**
+  String get otpResent;
+
   /// No description provided for @winsLabel.
   ///
   /// In az, this message translates to:
@@ -593,6 +839,24 @@ abstract class AppLocalizations {
   /// In az, this message translates to:
   /// **'{count} qələbə'**
   String winsText(int count);
+
+  /// No description provided for @leaderboardEmpty.
+  ///
+  /// In az, this message translates to:
+  /// **'Hələ heç bir oyunçu yoxdur'**
+  String get leaderboardEmpty;
+
+  /// No description provided for @leaderboardEmptyHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Birinci olmaq üçün oyna!'**
+  String get leaderboardEmptyHint;
+
+  /// No description provided for @leaderboardError.
+  ///
+  /// In az, this message translates to:
+  /// **'Reytinq yüklənmədi'**
+  String get leaderboardError;
 
   /// No description provided for @scoreLabel.
   ///
@@ -954,6 +1218,30 @@ abstract class AppLocalizations {
   /// **'Bot Qazandı 🤖'**
   String get botWon;
 
+  /// No description provided for @opponentThinking.
+  ///
+  /// In az, this message translates to:
+  /// **'düşünür...'**
+  String get opponentThinking;
+
+  /// No description provided for @opponentAnswered.
+  ///
+  /// In az, this message translates to:
+  /// **'cavabladı ✓'**
+  String get opponentAnswered;
+
+  /// No description provided for @opponentWon.
+  ///
+  /// In az, this message translates to:
+  /// **'Rəqib Qazandı'**
+  String get opponentWon;
+
+  /// No description provided for @youLost.
+  ///
+  /// In az, this message translates to:
+  /// **'Siz Uduzdunuz 💔'**
+  String get youLost;
+
   /// No description provided for @drawResult.
   ///
   /// In az, this message translates to:
@@ -995,6 +1283,30 @@ abstract class AppLocalizations {
   /// In az, this message translates to:
   /// **'+{coins} Sikkə'**
   String coinsEarned(int coins);
+
+  /// No description provided for @profileLoadFailed.
+  ///
+  /// In az, this message translates to:
+  /// **'Profil yüklənmədi'**
+  String get profileLoadFailed;
+
+  /// No description provided for @opponentDisconnectedMessage.
+  ///
+  /// In az, this message translates to:
+  /// **'Rəqib bağlantını kəsdi'**
+  String get opponentDisconnectedMessage;
+
+  /// No description provided for @alreadyInMatchMessage.
+  ///
+  /// In az, this message translates to:
+  /// **'Artıq bir matçdasınız'**
+  String get alreadyInMatchMessage;
+
+  /// No description provided for @connectionLostMessage.
+  ///
+  /// In az, this message translates to:
+  /// **'Bağlantı kəsildi'**
+  String get connectionLostMessage;
 }
 
 class _AppLocalizationsDelegate

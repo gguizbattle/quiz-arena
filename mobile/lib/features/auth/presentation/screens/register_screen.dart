@@ -1,11 +1,13 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/providers/app_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../providers/auth_provider.dart';
+import '../widgets/social_login_buttons.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -19,39 +21,43 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
   bool _obscure = true;
+  bool _obscureConfirm = true;
+  AuthErrorCode? _errorCode;
 
   @override
   void dispose() {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _register() async {
     if (!_form.currentState!.validate()) return;
-    await ref.read(authProvider.notifier).register(
+    setState(() => _errorCode = null);
+    final code = await ref.read(authProvider.notifier).register(
           _usernameCtrl.text.trim(),
           _emailCtrl.text.trim(),
           _passwordCtrl.text,
         );
     if (!mounted) return;
-    final authState = ref.read(authProvider);
-    authState.whenData((s) {
-      if (s.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(s.errorMessage!),
-            backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-      } else {
-        context.go('/home');
-      }
-    });
+    if (code != AuthErrorCode.none) {
+      setState(() => _errorCode = code);
+      return;
+    }
+    context.go('/home');
+  }
+
+  String _errorText(AppLocalizations l10n, AuthErrorCode code) {
+    return switch (code) {
+      AuthErrorCode.invalidCredentials => l10n.errorInvalidCredentials,
+      AuthErrorCode.userExists => l10n.errorUserExists,
+      AuthErrorCode.network => l10n.errorNetwork,
+      AuthErrorCode.generic || AuthErrorCode.cancelled || AuthErrorCode.none => l10n.errorGeneric,
+    };
   }
 
   @override
@@ -84,7 +90,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   const SizedBox(height: 6),
                   Text(l10n.joinBattleArena, style: AppTextStyles.bodyMedium)
                       .animate().fadeIn(delay: 100.ms),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 28),
+                  if (_errorCode != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.error.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _errorText(l10n, _errorCode!),
+                              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => setState(() => _errorCode = null),
+                            child: const Icon(Icons.close_rounded, color: AppColors.error, size: 18),
+                          ),
+                        ],
+                      ),
+                    ).animate().fadeIn(duration: 200.ms),
+                    const SizedBox(height: 14),
+                  ],
                   _buildField(
                     controller: _usernameCtrl,
                     hint: l10n.usernameField,
@@ -120,6 +153,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ),
                     validator: (v) => v!.length < 6 ? l10n.minSixChars : null,
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
+                  const SizedBox(height: 14),
+                  _buildField(
+                    controller: _confirmCtrl,
+                    hint: l10n.confirmPasswordField,
+                    icon: Icons.lock_outline_rounded,
+                    obscure: _obscureConfirm,
+                    suffix: IconButton(
+                      icon: Icon(_obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppColors.textMuted, size: 20),
+                      onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                    validator: (v) {
+                      if (v == null || v.isEmpty) return l10n.fieldRequired;
+                      if (v != _passwordCtrl.text) return l10n.passwordsDoNotMatch;
+                      return null;
+                    },
+                  ).animate().fadeIn(delay: 450.ms).slideX(begin: -0.1),
                   const SizedBox(height: 30),
                   SizedBox(
                     height: 54,
@@ -156,6 +205,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ],
                   ).animate().fadeIn(delay: 600.ms),
+                  const SizedBox(height: 24),
+                  const SocialLoginButtons().animate().fadeIn(delay: 700.ms),
                 ],
               ),
             ),

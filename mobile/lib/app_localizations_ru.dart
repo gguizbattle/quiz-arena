@@ -39,7 +39,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get createAccountTitle => 'Создать аккаунт';
 
   @override
-  String get joinBattleArena => 'Присоединяйся к арене GLIC';
+  String get joinBattleArena => 'Присоединяйся к арене Gguiz Battle';
 
   @override
   String get usernameField => 'Имя пользователя';
@@ -112,6 +112,52 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get mission3 => 'Ответь правильно на 10 вопросов';
+
+  @override
+  String missionPlayMatch(int count) {
+    return 'Сыграй $count матчей';
+  }
+
+  @override
+  String missionWinMatch(int count) {
+    return 'Выиграй $count матчей';
+  }
+
+  @override
+  String missionAnswerCorrect(int count) {
+    return 'Ответь правильно на $count вопросов';
+  }
+
+  @override
+  String missionFastAnswer(int count) {
+    return 'Ответь на $count вопросов за 5 секунд';
+  }
+
+  @override
+  String missionWinStreak(int count) {
+    return 'Выиграй $count матчей подряд';
+  }
+
+  @override
+  String missionRefreshIn(String time) {
+    return 'Обновится через: $time';
+  }
+
+  @override
+  String get missionClaim => 'Забрать';
+
+  @override
+  String get missionClaimed => 'Получено';
+
+  @override
+  String missionRewardXp(int xp) {
+    return '+$xp XP';
+  }
+
+  @override
+  String missionRewardCoins(int coins) {
+    return '+$coins монет';
+  }
 
   @override
   String get leaderboard => 'Рейтинг';
@@ -221,6 +267,62 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cancelSearch => 'Отмена';
 
   @override
+  String get noOpponentFoundYet => 'Соперник пока не найден';
+
+  @override
+  String get playWithBotInstead => 'Играть с ботом';
+
+  @override
+  String get maxLevelBadge => 'Максимальный уровень';
+
+  @override
+  String get levelUpTitle => 'НОВЫЙ УРОВЕНЬ!';
+
+  @override
+  String levelUpSubtitle(int level) {
+    return 'Вы достигли $level уровня!';
+  }
+
+  @override
+  String get continueButton => 'ПРОДОЛЖИТЬ';
+
+  @override
+  String get levelTier1 => 'НОВИЧОК';
+
+  @override
+  String get levelTier2 => 'ОПЫТНЫЙ';
+
+  @override
+  String get levelTier3 => 'ЗНАТОК';
+
+  @override
+  String get levelTier4 => 'МАСТЕР';
+
+  @override
+  String get levelTier5 => 'ЭКСПЕРТ';
+
+  @override
+  String get levelTier6 => 'ЧЕМПИОН';
+
+  @override
+  String get levelTier7 => 'ЛЕГЕНДА';
+
+  @override
+  String get orContinueWith => 'ИЛИ';
+
+  @override
+  String get continueWithGoogle => 'Продолжить с Google';
+
+  @override
+  String get continueWithApple => 'Продолжить с Apple';
+
+  @override
+  String get continueWithFacebook => 'Продолжить с Facebook';
+
+  @override
+  String get socialLoginFailed => 'Не удалось войти. Попробуйте снова.';
+
+  @override
   String get coinBalanceTitle => 'Баланс монет';
 
   @override
@@ -237,6 +339,48 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get noNotifications => 'У вас пока нет уведомлений';
+
+  @override
+  String get errorInvalidCredentials => 'Неверное имя пользователя или пароль';
+
+  @override
+  String get errorUserExists =>
+      'Это имя пользователя или email уже зарегистрированы';
+
+  @override
+  String get errorNetwork => 'Нет соединения с сервером. Проверьте интернет';
+
+  @override
+  String get errorGeneric => 'Произошла ошибка. Попробуйте снова';
+
+  @override
+  String get confirmPasswordField => 'Повторите пароль';
+
+  @override
+  String get passwordsDoNotMatch => 'Пароли не совпадают';
+
+  @override
+  String get otpTitle => 'Подтверждение email';
+
+  @override
+  String otpSubtitle(String email) {
+    return 'Мы отправили 6-значный код на $email';
+  }
+
+  @override
+  String get otpInputHint => 'Код подтверждения';
+
+  @override
+  String get otpVerifyButton => 'ПОДТВЕРДИТЬ';
+
+  @override
+  String get otpResendButton => 'Отправить код заново';
+
+  @override
+  String get otpInvalid => 'Неверный или просроченный код';
+
+  @override
+  String get otpResent => 'Код отправлен';
 
   @override
   String get winsLabel => 'Победы';
@@ -257,6 +401,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String winsText(int count) {
     return '$count побед';
   }
+
+  @override
+  String get leaderboardEmpty => 'Пока нет игроков';
+
+  @override
+  String get leaderboardEmptyHint => 'Играйте, чтобы стать первым!';
+
+  @override
+  String get leaderboardError => 'Не удалось загрузить рейтинг';
 
   @override
   String scoreLabel(int score) {
@@ -453,6 +606,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get botWon => 'Бот победил 🤖';
 
   @override
+  String get opponentThinking => 'думает...';
+
+  @override
+  String get opponentAnswered => 'ответил ✓';
+
+  @override
+  String get opponentWon => 'Соперник победил';
+
+  @override
+  String get youLost => 'Вы проиграли 💔';
+
+  @override
   String get drawResult => 'Ничья! 🤝';
 
   @override
@@ -476,4 +641,16 @@ class AppLocalizationsRu extends AppLocalizations {
   String coinsEarned(int coins) {
     return '+$coins Монет';
   }
+
+  @override
+  String get profileLoadFailed => 'Не удалось загрузить профиль';
+
+  @override
+  String get opponentDisconnectedMessage => 'Соперник отключился';
+
+  @override
+  String get alreadyInMatchMessage => 'Вы уже в матче';
+
+  @override
+  String get connectionLostMessage => 'Соединение прервано';
 }

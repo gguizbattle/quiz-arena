@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import '../../../../core/data/quiz_questions.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
+import '../../../home/data/user_repository.dart';
+import '../../../home/providers/user_provider.dart';
+import '../../../missions/data/daily_mission.dart';
+import '../../../missions/providers/daily_missions_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../data/battle_socket_service.dart';
+import '../widgets/level_up_overlay.dart';
 
 class BattleMatchArgs {
   final String matchId;
@@ -109,10 +114,17 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
       _answered = true;
       if (isCorrect) {
         _myCorrect++;
-        // Tez cavab daha çox xal: 100 + remainingTime*10
-        _myScore += 100 + (_timeLeft * 10);
+        // Tez cavab daha çox xal: 100 + remainingTime*10 (rəqibin xalı ilə eyni formula)
+        final remaining = ((15000 - timeMs) / 1000).clamp(0, 15).round();
+        _myScore += 100 + remaining * 10;
       }
     });
+    if (isCorrect) {
+      final notifier = ref.read(dailyMissionsProvider.notifier);
+      notifier.incrementProgress(MissionType.answerCorrect, 1);
+      // 5 saniyÉ™ É™rzindÉ™ cavab: timeMs < 5000
+      if (timeMs < 5000) notifier.incrementProgress(MissionType.fastAnswer, 1);
+    }
     widget.args.socket.submitAnswer(
       matchId: widget.args.matchId,
       questionIndex: _currentQ,
@@ -124,6 +136,9 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
 
   void _onOpponentAnswer(Map<String, dynamic> data) {
     if (data['questionIndex'] != _currentQ) return;
+    // Backend səhvən geri echo etsə öz cavabımızı opponent kimi saymayaq.
+    final fromSocketId = data['socketId'] as String?;
+    if (fromSocketId != null && fromSocketId == widget.args.socket.socketId) return;
     setState(() {
       _opponentAnswered = true;
       if (data['isCorrect'] == true) {
@@ -149,9 +164,15 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
     }
   }
 
+  bool _resultProcessed = false;
+
   void _onMatchResult(Map<String, dynamic> data) {
     if (!mounted) return;
+    if (_resultProcessed) return; // server təkrar göndərsə də yalnız 1 dəfə
+    _resultProcessed = true;
     final myReward = (data['rewards'] as Map?)?[widget.args.userId];
+    int? leveledFrom;
+    int? leveledTo;
     if (myReward != null) {
       final xp = (myReward['xp'] as num).toInt();
       final coins = (myReward['coins'] as num).toInt();
@@ -159,22 +180,47 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
       final outcome = winnerId == null
           ? GameOutcome.draw
           : (winnerId == widget.args.userId ? GameOutcome.win : GameOutcome.loss);
+
+      final profile = ref.read(userProfileProvider).valueOrNull;
+      final bonusXp = ref.read(localGameStatsProvider).bonusXp;
+      final oldTotalXp = (profile?.xp ?? 0) + bonusXp;
+      final oldLevel = UserProfile.levelFromXp(oldTotalXp);
+
       ref.read(localGameStatsProvider.notifier).addReward(
             xp: xp,
             coins: coins,
             outcome: outcome,
           );
+      final missions = ref.read(dailyMissionsProvider.notifier);
+      missions.incrementProgress(MissionType.playMatch, 1);
+      if (outcome == GameOutcome.win) {
+        missions.incrementProgress(MissionType.winMatch, 1);
+      }
+      missions.updateStreak(outcome == GameOutcome.win);
+
+      final newLevel = UserProfile.levelFromXp(oldTotalXp + xp);
+      if (newLevel > oldLevel) {
+        leveledFrom = oldLevel;
+        leveledTo = newLevel;
+      }
     }
     setState(() {
       _matchResult = data;
       _showResult = true;
     });
+    if (leveledFrom != null && leveledTo != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          showLevelUpOverlay(context, oldLevel: leveledFrom!, newLevel: leveledTo!);
+        }
+      });
+    }
   }
 
   void _onOpponentDisconnected() {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Rəqib bağlantını kəsdi'), backgroundColor: AppColors.error),
+      SnackBar(content: Text(AppLocalizations.of(context)!.opponentDisconnectedMessage), backgroundColor: AppColors.error),
     );
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) context.go('/home');
@@ -322,10 +368,10 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('👤', style: TextStyle(fontSize: 16)),
+          Text('👤', style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 8),
           Text(
-            _opponentAnswered ? '${widget.args.opponentName} ${l10n.botAnswered}' : '${widget.args.opponentName} ${l10n.botThinking}',
+            _opponentAnswered ? '${widget.args.opponentName} ${l10n.opponentAnswered}' : '${widget.args.opponentName} ${l10n.opponentThinking}',
             style: AppTextStyles.bodySmall.copyWith(
               color: _opponentAnswered ? AppColors.success : AppColors.textMuted,
             ),
@@ -403,7 +449,7 @@ class _BattleMatchScreenState extends ConsumerState<BattleMatchScreen> {
                 ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
                 const SizedBox(height: 16),
                 Text(
-                  isDraw ? l10n.drawResult : (isWin ? l10n.youWon : l10n.botWon),
+                  isDraw ? l10n.drawResult : (isWin ? l10n.youWon : l10n.youLost),
                   style: AppTextStyles.headlineLarge.copyWith(
                     color: isDraw ? AppColors.accent : (isWin ? AppColors.success : AppColors.error),
                   ),

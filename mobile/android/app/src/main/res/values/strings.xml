@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Gguiz Battle</string>
+    <!--
+      Facebook SDK üçün placeholder qiymətlər. Real OAuth axını işləməsi üçün
+      Facebook Developer Console-da app yaradıb həqiqi App ID və Client Token-i
+      buraya yazın.
+    -->
+    <string name="facebook_app_id">000000000000000</string>
+    <string name="facebook_client_token">0000000000000000000000000000000000</string>
+    <string name="fb_login_protocol_scheme">fb000000000000000</string>
+</resources>

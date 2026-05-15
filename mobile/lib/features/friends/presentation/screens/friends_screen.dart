@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:quiz_arena/app_localizations.dart';
+import 'package:gguiz_battle/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
@@ -14,18 +14,8 @@ class FriendsScreen extends StatefulWidget {
 class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final _friends = [
-    ('NightOwl99', 1980, true, '🥈'),
-    ('BrainMaster', 1875, true, '🥉'),
-    ('QuizKing', 1820, false, '4'),
-    ('SmartAlex', 1770, true, '5'),
-    ('ThinkFast', 1720, false, '6'),
-  ];
-
-  final _requests = [
-    ('SpeedDemon99', 1650),
-    ('QuizWizard', 1580),
-  ];
+  final List<(String, int, bool, String)> _friends = [];
+  final List<(String, int)> _requests = [];
 
   @override
   void initState() {

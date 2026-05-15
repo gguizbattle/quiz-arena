@@ -1,4 +1,4 @@
-# quiz_arena
+# gguiz_battle
 
 A new Flutter project.
 
