@@ -184,8 +184,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const indices = this.pickRandomIndices(questionsPerMatch, totalQuestions);
 
     const room = match.id;
-    this.server.sockets.sockets.get(playerA.socketId)?.join(room);
-    this.server.sockets.sockets.get(playerB.socketId)?.join(room);
+    // @WebSocketGateway({ namespace: '/game' }) qoyulduqda `this.server`
+    // runtime-da Namespace obyektinə yönəlir, lakin TS-də `Server` kimi typed-dir.
+    // Namespace.sockets = Map<SocketId, Socket> — `any` cast ilə əldə edilir.
+    const sockets = (this.server as any).sockets as Map<string, Socket>;
+    sockets.get(playerA.socketId)?.join(room);
+    sockets.get(playerB.socketId)?.join(room);
 
     this.activeMatches.set(match.id, {
       matchId: match.id,

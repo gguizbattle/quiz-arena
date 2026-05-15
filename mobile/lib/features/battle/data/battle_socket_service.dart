@@ -49,6 +49,7 @@ class BattleSocketService {
   }
 
   void joinQueue({required String userId, required String username, required int elo}) {
+    debugPrint('[ws] match:join → user=$username (id=${userId.substring(0, 8)}, elo=$elo)');
     _socket?.emit('match:join', {
       'userId': userId,
       'username': username,
@@ -91,11 +92,15 @@ class BattleSocketService {
   }
 
   void onWaiting(void Function() callback) {
-    _socket?.on('match:waiting', (_) => callback());
+    _socket?.on('match:waiting', (_) {
+      debugPrint('[ws] ← match:waiting (queue-da gözləyirik)');
+      callback();
+    });
   }
 
   void onMatchStart(void Function(Map<String, dynamic> data) callback) {
     _socket?.on('match:start', (data) {
+      debugPrint('[ws] ← match:start: $data');
       if (data is Map) callback(Map<String, dynamic>.from(data));
     });
   }
@@ -118,6 +123,7 @@ class BattleSocketService {
 
   void onError(void Function(Map<String, dynamic> data) callback) {
     _socket?.on('match:error', (data) {
+      debugPrint('[ws] ← match:error: $data');
       if (data is Map) callback(Map<String, dynamic>.from(data));
     });
   }
