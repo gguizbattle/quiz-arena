@@ -10,7 +10,7 @@ async function bootstrap() {
   app.enableCors({ origin: '*' });
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   console.log(`Quiz Arena Backend running on port ${port}`);
 }
 bootstrap();
