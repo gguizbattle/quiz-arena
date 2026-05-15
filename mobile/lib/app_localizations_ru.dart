@@ -643,6 +643,31 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get usernameSetupTitle => 'Выберите имя пользователя';
+
+  @override
+  String get usernameSetupSubtitle =>
+      'Имя, которое увидят другие — позже его можно изменить';
+
+  @override
+  String get usernameSetupHint => 'Имя пользователя';
+
+  @override
+  String get usernameSetupContinue => 'ПРОДОЛЖИТЬ';
+
+  @override
+  String get usernameSetupErrorTaken => 'Это имя уже занято';
+
+  @override
+  String get usernameSetupErrorFormat => 'Только буквы, цифры и _';
+
+  @override
+  String get usernameSetupErrorMinLen => 'Минимум 3 символа';
+
+  @override
+  String get usernameSetupSaveFailed => 'Не удалось сохранить';
+
+  @override
   String get profileLoadFailed => 'Не удалось загрузить профиль';
 
   @override

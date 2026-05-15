@@ -26,7 +26,7 @@ export class UsersService {
   async changeUsername(id: string, username: string): Promise<User> {
     const existing = await this.repo.findOne({ where: { username } });
     if (existing && existing.id !== id) throw new Error('username_taken');
-    await this.repo.update(id, { username });
+    await this.repo.update(id, { username, username_set: true });
     return this.findById(id);
   }
 

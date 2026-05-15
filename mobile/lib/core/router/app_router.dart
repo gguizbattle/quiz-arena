@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/username_setup_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/quiz/presentation/screens/solo_quiz_screen.dart';
 import '../../features/battle/presentation/screens/battle_screen.dart';
@@ -35,6 +36,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (isLoading) return null;
 
       final publicPaths = ['/splash', '/login', '/register'];
+      // /setup-username authenticated-only-dir, amma onsuz da publicPaths-da
+      // olmadığı üçün unauthenticated halda /login-ə düşür.
       if (isAuthenticated == true && publicPaths.contains(path)) return '/home';
       if (isAuthenticated == false && !publicPaths.contains(path)) return '/login';
       return null;
@@ -43,6 +46,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
+      GoRoute(path: '/setup-username', builder: (_, __) => const UsernameSetupScreen()),
       GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/quiz', builder: (_, __) => const SoloQuizScreen()),
       GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/battle', builder: (_, __) => const BattleScreen()),
       GoRoute(parentNavigatorKey: _rootNavigatorKey, path: '/bot-battle', builder: (_, __) => const BotBattleScreen()),

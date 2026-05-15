@@ -1284,6 +1284,54 @@ abstract class AppLocalizations {
   /// **'+{coins} Sikkə'**
   String coinsEarned(int coins);
 
+  /// No description provided for @usernameSetupTitle.
+  ///
+  /// In az, this message translates to:
+  /// **'İstifadəçi adı seç'**
+  String get usernameSetupTitle;
+
+  /// No description provided for @usernameSetupSubtitle.
+  ///
+  /// In az, this message translates to:
+  /// **'Sizi tanıyacağımız ad — sonra dəyişə bilərsiniz'**
+  String get usernameSetupSubtitle;
+
+  /// No description provided for @usernameSetupHint.
+  ///
+  /// In az, this message translates to:
+  /// **'İstifadəçi adı'**
+  String get usernameSetupHint;
+
+  /// No description provided for @usernameSetupContinue.
+  ///
+  /// In az, this message translates to:
+  /// **'DAVAM ET'**
+  String get usernameSetupContinue;
+
+  /// No description provided for @usernameSetupErrorTaken.
+  ///
+  /// In az, this message translates to:
+  /// **'Bu ad artıq tutulub'**
+  String get usernameSetupErrorTaken;
+
+  /// No description provided for @usernameSetupErrorFormat.
+  ///
+  /// In az, this message translates to:
+  /// **'Yalnız hərf, rəqəm və _'**
+  String get usernameSetupErrorFormat;
+
+  /// No description provided for @usernameSetupErrorMinLen.
+  ///
+  /// In az, this message translates to:
+  /// **'Min 3 simvol'**
+  String get usernameSetupErrorMinLen;
+
+  /// No description provided for @usernameSetupSaveFailed.
+  ///
+  /// In az, this message translates to:
+  /// **'Yadda saxlamaq alınmadı'**
+  String get usernameSetupSaveFailed;
+
   /// No description provided for @profileLoadFailed.
   ///
   /// In az, this message translates to:

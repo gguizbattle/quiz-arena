@@ -49,8 +49,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     // Profil yüklənən kimi və ya səviyyə dəyişəndə missionları yenilə.
+    // Əgər istifadəçi hələ username seçməyibsə setup ekranına yönləndir.
     ref.listen(userProfileProvider, (_, next) {
       next.whenData((profile) {
+        if (!profile.usernameSet) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) context.go('/setup-username');
+          });
+          return;
+        }
         ref.read(dailyMissionsProvider.notifier).ensureFresh(profile.level);
       });
     });

@@ -15,6 +15,7 @@ class UserProfile {
   final int wins;
   final int losses;
   final bool isPremium;
+  final bool usernameSet;
 
   const UserProfile({
     required this.id,
@@ -28,6 +29,7 @@ class UserProfile {
     required this.wins,
     required this.losses,
     required this.isPremium,
+    required this.usernameSet,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> j) => UserProfile(
@@ -42,6 +44,7 @@ class UserProfile {
         wins: (j['wins'] as num).toInt(),
         losses: (j['losses'] as num).toInt(),
         isPremium: j['is_premium'] as bool? ?? false,
+        usernameSet: j['username_set'] as bool? ?? true,
       );
 
   factory UserProfile.offline({required String username, String? email}) =>
@@ -57,6 +60,7 @@ class UserProfile {
         wins: 0,
         losses: 0,
         isPremium: false,
+        usernameSet: true,
       );
 
   int get totalGames => wins + losses;
@@ -116,9 +120,15 @@ class UserRepository {
 
   Future<UserProfile> getMe() async {
     try {
+      // ignore: avoid_print
+      print('[user_repo] GET /users/me başlayır');
       final response = await _dio.get('/users/me');
+      // ignore: avoid_print
+      print('[user_repo] GET /users/me OK status=${response.statusCode}');
       return UserProfile.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
+      // ignore: avoid_print
+      print('[user_repo] GET /users/me failed: type=${e.type} status=${e.response?.statusCode} data=${e.response?.data}');
       if (_isNetworkError(e)) {
         final username = await _storage.read(key: 'username') ?? 'Player';
         final email = await _storage.read(key: 'email');
@@ -126,6 +136,15 @@ class UserRepository {
       }
       rethrow;
     }
+  }
+
+  /// Username dəyiş + username_set=true et. 409 → istifadəçi adı tutulub.
+  Future<UserProfile> setUsername(String username) async {
+    final response = await _dio.patch(
+      '/users/me/username',
+      data: {'username': username},
+    );
+    return UserProfile.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Bot/solo oyunlarından lokal queue-da yığılan mükafatları backend-ə

@@ -644,6 +644,31 @@ class AppLocalizationsAz extends AppLocalizations {
   }
 
   @override
+  String get usernameSetupTitle => 'İstifadəçi adı seç';
+
+  @override
+  String get usernameSetupSubtitle =>
+      'Sizi tanıyacağımız ad — sonra dəyişə bilərsiniz';
+
+  @override
+  String get usernameSetupHint => 'İstifadəçi adı';
+
+  @override
+  String get usernameSetupContinue => 'DAVAM ET';
+
+  @override
+  String get usernameSetupErrorTaken => 'Bu ad artıq tutulub';
+
+  @override
+  String get usernameSetupErrorFormat => 'Yalnız hərf, rəqəm və _';
+
+  @override
+  String get usernameSetupErrorMinLen => 'Min 3 simvol';
+
+  @override
+  String get usernameSetupSaveFailed => 'Yadda saxlamaq alınmadı';
+
+  @override
   String get profileLoadFailed => 'Profil yüklənmədi';
 
   @override

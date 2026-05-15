@@ -643,6 +643,31 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String get usernameSetupTitle => 'Kullanıcı adı seçin';
+
+  @override
+  String get usernameSetupSubtitle =>
+      'Diğerlerinin göreceği ad — daha sonra değiştirebilirsiniz';
+
+  @override
+  String get usernameSetupHint => 'Kullanıcı adı';
+
+  @override
+  String get usernameSetupContinue => 'DEVAM';
+
+  @override
+  String get usernameSetupErrorTaken => 'Bu ad zaten alınmış';
+
+  @override
+  String get usernameSetupErrorFormat => 'Sadece harf, rakam ve _';
+
+  @override
+  String get usernameSetupErrorMinLen => 'En az 3 karakter';
+
+  @override
+  String get usernameSetupSaveFailed => 'Kaydedilemedi';
+
+  @override
   String get profileLoadFailed => 'Profil yüklenemedi';
 
   @override

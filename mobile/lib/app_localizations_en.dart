@@ -643,6 +643,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get usernameSetupTitle => 'Pick a username';
+
+  @override
+  String get usernameSetupSubtitle =>
+      'The name others will see — you can change it later';
+
+  @override
+  String get usernameSetupHint => 'Username';
+
+  @override
+  String get usernameSetupContinue => 'CONTINUE';
+
+  @override
+  String get usernameSetupErrorTaken => 'This username is taken';
+
+  @override
+  String get usernameSetupErrorFormat => 'Letters, numbers and _ only';
+
+  @override
+  String get usernameSetupErrorMinLen => 'Min 3 characters';
+
+  @override
+  String get usernameSetupSaveFailed => 'Could not save';
+
+  @override
   String get profileLoadFailed => 'Failed to load profile';
 
   @override
