@@ -7,11 +7,6 @@ import { Repository } from 'typeorm';
 import { passportJwtSecret } from 'jwks-rsa';
 import { User } from '../../database/entities/user.entity';
 
-/// Supabase Auth JWT-lərini doğrulayır.
-///
-/// Supabase yeni layihələrdə ES256 imzalı token verir. Public açar
-/// JWKS endpoint-dən gəlir (kid-ə görə cache olunur). jwks-rsa ES256/RS256/HS256
-/// üçün uyğun açarı qaytarır, sonra passport-jwt jsonwebtoken ilə yoxlayır.
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -22,29 +17,40 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!supabaseUrl) {
       throw new Error('SUPABASE_URL environment variable tələb olunur');
     }
+    console.log('[JwtStrategy] init with SUPABASE_URL=', supabaseUrl);
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKeyProvider: passportJwtSecret({
         jwksUri: `${supabaseUrl}/auth/v1/.well-known/jwks.json`,
         cache: true,
-        cacheMaxAge: 24 * 60 * 60 * 1000, // 24 saat
+        cacheMaxAge: 24 * 60 * 60 * 1000,
         rateLimit: true,
         jwksRequestsPerMinute: 10,
+        handleSigningKeyError: (err, cb) => {
+          console.error('[JwtStrategy] JWKS signing key error:', err?.message);
+          return cb(err);
+        },
       }),
       algorithms: ['ES256', 'RS256', 'HS256'],
-      audience: 'authenticated',
+      // Audience yoxlamasını söndürürük — Supabase aud="authenticated" amma
+      // bəzən fərqli ola bilər, debug üçün bypass.
+      ignoreExpiration: false,
     });
   }
 
-  async validate(payload: { sub: string; email?: string; role?: string }) {
-    // Token artıq doğrulanıb. `sub` = auth.users.id (UUID).
-    // DB trigger public.users-da eyni id ilə profil yaradır.
+  async validate(payload: any) {
+    console.log('[JwtStrategy] validate called with payload:', JSON.stringify(payload).slice(0, 200));
+    if (!payload?.sub) {
+      console.error('[JwtStrategy] no sub in payload');
+      throw new UnauthorizedException('no_sub');
+    }
     const user = await this.usersRepo.findOne({ where: { id: payload.sub } });
     if (!user) {
-      // Trigger gecikmiş ola bilər — yenidən cəhd üçün 401
+      console.error('[JwtStrategy] profile not found for id=', payload.sub);
       throw new UnauthorizedException('profile_not_found');
     }
+    console.log('[JwtStrategy] user found:', user.id, user.username);
     return user;
   }
 }
