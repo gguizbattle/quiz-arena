@@ -8,6 +8,7 @@ import 'package:gguiz_battle/app_localizations.dart';
 import '../../../../core/providers/local_game_stats_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../home/data/user_repository.dart';
 import '../../../home/providers/user_provider.dart';
 import '../../data/battle_socket_service.dart';
 import 'battle_match_screen.dart';
@@ -57,66 +58,15 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
       if (_searching) setState(() => _searchTooLong = true);
     });
 
-    _socket.onWaiting(() {
-      // Server queue-da gözləməyimizi təsdiqlədi
-    });
-
-    _socket.onMatchStart((data) {
-      if (!mounted) return;
-      final indices = (data['questionIndices'] as List).map((e) => e as int).toList();
-      final opponents = data['opponents'] as Map?;
-      final opponentInfo = opponents?[profile.id] as Map?;
-      final opponentName = opponentInfo?['username'] as String? ?? '???';
-      final opponentElo = (opponentInfo?['elo'] as num?)?.toInt() ?? 1000;
-
-      _searchTimeout?.cancel();
-      _socket.clearListeners();
-      setState(() {
-        _searching = false;
-        _searchTooLong = false;
-      });
-
-      Navigator.of(context).push(MaterialPageRoute(
-        builder: (_) => BattleMatchScreen(
-          args: BattleMatchArgs(
-            matchId: data['matchId'] as String,
-            userId: profile.id,
-            username: profile.username,
-            questionIndices: indices,
-            opponentName: opponentName,
-            opponentElo: opponentElo,
-            socket: _socket,
-          ),
-        ),
-      )).then((_) {
-        // Match bitdikdən sonra battle screen-ə qayıdırıq
-        if (mounted) setState(() => _searching = false);
-      });
-    });
-
-    _socket.onError((data) {
-      if (!mounted) return;
-      _searchTimeout?.cancel();
-      final code = data['message'] as String?;
-      String message;
-      switch (code) {
-        case 'ALREADY_IN_MATCH':
-          message = l10n.alreadyInMatchMessage;
-          break;
-        default:
-          message = l10n.errorGeneric;
-      }
-      setState(() {
-        _searching = false;
-        _searchTooLong = false;
-        _errorMessage = message;
-      });
-    });
-
-    // Bağlantı qurulduqdan SONRA queue-ya qoşul (vaxtsız emit-i önləmək üçün).
+    // Bağlantı qurulduqdan SONRA listener-ləri qoş və queue-ya qoşul.
+    // Əgər listener-lər `connect`-dən əvvəl qoyulsa, `_socket` hələ null
+    // olduğu üçün null-safe call sayəsində heç bir handler qoşulmur.
     _socket.connect(
       whenConnected: () {
         if (!mounted || !_searching) return;
+        _socket.onWaiting(() {});
+        _socket.onMatchStart((data) => _handleMatchStart(profile, data));
+        _socket.onError((data) => _handleError(l10n, data));
         _socket.joinQueue(
           userId: profile.id,
           username: profile.username,
@@ -133,6 +83,50 @@ class _BattleScreenState extends ConsumerState<BattleScreen> {
         });
       },
     );
+  }
+
+  void _handleMatchStart(UserProfile profile, Map<String, dynamic> data) {
+    if (!mounted) return;
+    final indices = (data['questionIndices'] as List).map((e) => e as int).toList();
+    final opponents = data['opponents'] as Map?;
+    final opponentInfo = opponents?[profile.id] as Map?;
+    final opponentName = opponentInfo?['username'] as String? ?? '???';
+    final opponentElo = (opponentInfo?['elo'] as num?)?.toInt() ?? 1000;
+
+    _searchTimeout?.cancel();
+    _socket.clearListeners();
+    setState(() {
+      _searching = false;
+      _searchTooLong = false;
+    });
+
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => BattleMatchScreen(
+        args: BattleMatchArgs(
+          matchId: data['matchId'] as String,
+          userId: profile.id,
+          username: profile.username,
+          questionIndices: indices,
+          opponentName: opponentName,
+          opponentElo: opponentElo,
+          socket: _socket,
+        ),
+      ),
+    )).then((_) {
+      if (mounted) setState(() => _searching = false);
+    });
+  }
+
+  void _handleError(AppLocalizations l10n, Map<String, dynamic> data) {
+    if (!mounted) return;
+    _searchTimeout?.cancel();
+    final code = data['message'] as String?;
+    final message = code == 'ALREADY_IN_MATCH' ? l10n.alreadyInMatchMessage : l10n.errorGeneric;
+    setState(() {
+      _searching = false;
+      _searchTooLong = false;
+      _errorMessage = message;
+    });
   }
 
   void _cancelSearch() {

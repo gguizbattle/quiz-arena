@@ -12,6 +12,25 @@ interface WaitingPlayer {
   userId: string;
   username: string;
   elo: number;
+  joinedAt: number; // ms timestamp — ELO toleransını vaxt keçdikcə genişlətmək üçün
+}
+
+/**
+ * ELO toleransını gözləmə müddətinə görə hesabla:
+ *   0-10s  → ±100
+ *   10-30s → ±250
+ *   30-60s → ±500
+ *   60s+   → ±1000 (praktikada hər kəs uyğun olur)
+ *
+ * 100k istifadəçidə vacibdir ki, ELO yaxın oyunçular tez tapılsın, sonra
+ * gözləmə artdıqda fərq də artsın. Hər iki tərəfin toleransının min-i kifayət
+ * etməlidir ki, match qurulsun (qarşılıqlı razılıq).
+ */
+function eloToleranceFor(waitingMs: number): number {
+  if (waitingMs < 10_000) return 100;
+  if (waitingMs < 30_000) return 250;
+  if (waitingMs < 60_000) return 500;
+  return 1000;
 }
 
 interface ActiveMatch {
@@ -28,11 +47,37 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private waitingPlayers: WaitingPlayer[] = [];
   private activeMatches = new Map<string, ActiveMatch>();
   private socketToMatch = new Map<string, string>();
+  private rescanTimer?: NodeJS.Timeout;
 
   constructor(
     private matchesService: MatchesService,
     private questionsService: QuestionsService,
-  ) {}
+  ) {
+    // Hər 5 saniyədə queue-ni yenidən yoxla — vaxt keçdikcə genişlənən ELO
+    // toleransı yeni match imkanı yarada bilər (yeni heç kim gəlmədən belə
+    // iki köhnə gözləyən bir-birini görə bilər).
+    this.rescanTimer = setInterval(() => this.rescanQueue(), 5_000);
+  }
+
+  private async rescanQueue() {
+    if (this.waitingPlayers.length < 2) return;
+    const now = Date.now();
+    for (let i = 0; i < this.waitingPlayers.length; i++) {
+      const a = this.waitingPlayers[i];
+      const aTol = eloToleranceFor(now - a.joinedAt);
+      for (let j = i + 1; j < this.waitingPlayers.length; j++) {
+        const b = this.waitingPlayers[j];
+        const bTol = eloToleranceFor(now - b.joinedAt);
+        if (Math.abs(a.elo - b.elo) <= Math.max(aTol, bTol)) {
+          console.log(`[WS] rescan: pairing ${a.username} (waited ${Math.round((now - a.joinedAt) / 1000)}s) ↔ ${b.username} (waited ${Math.round((now - b.joinedAt) / 1000)}s)`);
+          // İkisini də sil və match başlat
+          this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== a.userId && p.userId !== b.userId);
+          await this.startMatch(a, b);
+          return; // bir match başladıqdan sonra növbəti tick-də davam
+        }
+      }
+    }
+  }
 
   handleConnection(client: Socket) {
     console.log(`[WS] Client connected: ${client.id}`);
@@ -87,15 +132,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== data.userId);
     }
 
-    const opponent = this.waitingPlayers.find(
-      p => p.userId !== data.userId && Math.abs(p.elo - data.elo) <= 200,
-    );
+    // Yeni gələnin toleransı 0s = ±100. Gözləyənin toleransı isə artıq genişlənmiş ola bilər.
+    // Match qurulması üçün hər iki tərəfin toleransının min-i ELO fərqini əhatə etməlidir.
+    const now = Date.now();
+    const opponent = this.waitingPlayers.find(p => {
+      if (p.userId === data.userId) return false;
+      const diff = Math.abs(p.elo - data.elo);
+      const waitTol = eloToleranceFor(now - p.joinedAt);
+      const myTol = eloToleranceFor(0); // yeni gələnin toleransı
+      return diff <= Math.max(waitTol, myTol);
+    });
 
     if (opponent) {
-      console.log(`[WS]   → MATCH FOUND vs ${opponent.username} (elo diff=${Math.abs(opponent.elo - data.elo)})`);
+      console.log(`[WS]   → MATCH FOUND vs ${opponent.username} (elo diff=${Math.abs(opponent.elo - data.elo)}, waited ${Math.round((now - opponent.joinedAt) / 1000)}s)`);
       this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== opponent.userId);
       await this.startMatch(
-        { socketId: client.id, ...data },
+        { socketId: client.id, ...data, joinedAt: now },
         opponent,
       );
     } else {
@@ -104,6 +156,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId: data.userId,
         username: data.username,
         elo: data.elo,
+        joinedAt: now,
       });
       console.log(`[WS]   → queued (total=${this.waitingPlayers.length}): ${this.waitingPlayers.map(p => `${p.username}(${p.elo})`).join(', ')}`);
       client.emit('match:waiting');
