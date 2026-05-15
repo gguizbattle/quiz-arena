@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../../core/constants/api_constants.dart';
 
@@ -11,9 +12,11 @@ class BattleSocketService {
   /// Socket-i qoş və `whenConnected` callback-i tetiklə (zatən qoşuludursa dərhal).
   void connect({void Function()? whenConnected, void Function(Object error)? onConnectError}) {
     if (_socket != null && _socket!.connected) {
+      debugPrint('[ws] already connected, sock=${_socket!.id}');
       whenConnected?.call();
       return;
     }
+    debugPrint('[ws] connecting to ${ApiConstants.socketUrl}');
     _socket ??= io.io(
       ApiConstants.socketUrl,
       io.OptionBuilder()
@@ -21,12 +24,20 @@ class BattleSocketService {
           .disableAutoConnect()
           .build(),
     );
-    if (whenConnected != null) {
-      _socket!.onConnect((_) => whenConnected());
-    }
+    _socket!.onConnect((_) {
+      debugPrint('[ws] connected, sock=${_socket!.id}');
+      whenConnected?.call();
+    });
+    _socket!.onDisconnect((_) => debugPrint('[ws] disconnected'));
     if (onConnectError != null) {
-      _socket!.onConnectError((err) => onConnectError(err as Object));
-      _socket!.onError((err) => onConnectError(err as Object));
+      _socket!.onConnectError((err) {
+        debugPrint('[ws] connect error: $err');
+        onConnectError(err as Object);
+      });
+      _socket!.onError((err) {
+        debugPrint('[ws] error: $err');
+        onConnectError(err as Object);
+      });
     }
     if (!_socket!.connected) _socket!.connect();
   }

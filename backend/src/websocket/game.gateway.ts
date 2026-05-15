@@ -62,11 +62,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { userId: string; username: string; elo: number },
   ) {
+    console.log(`[WS] match:join ← ${data.username} (id=${data.userId.slice(0, 8)}, elo=${data.elo}, sock=${client.id})`);
+    console.log(`[WS]   queue=${this.waitingPlayers.length}, activeMatches=${this.activeMatches.size}`);
+
     // Eyni istifadəçi artıq oyundadır
     const inMatch = Array.from(this.activeMatches.values()).some(m =>
       m.players.some(p => p.userId === data.userId),
     );
     if (inMatch) {
+      console.log(`[WS]   → REJECT: already in match`);
       client.emit('match:error', { message: 'ALREADY_IN_MATCH' });
       return;
     }
@@ -75,11 +79,11 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const existing = this.waitingPlayers.find(p => p.userId === data.userId);
     if (existing) {
       if (existing.socketId === client.id) {
-        // Eyni socket: təkrar qoşulma, yalnız waiting bildirişi
+        console.log(`[WS]   → already waiting on same socket, re-emit waiting`);
         client.emit('match:waiting');
         return;
       }
-      // Fərqli socket: köhnəni at, yenisi ilə davam et
+      console.log(`[WS]   → replace stale socket ${existing.socketId} → ${client.id}`);
       this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== data.userId);
     }
 
@@ -88,6 +92,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     if (opponent) {
+      console.log(`[WS]   → MATCH FOUND vs ${opponent.username} (elo diff=${Math.abs(opponent.elo - data.elo)})`);
       this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== opponent.userId);
       await this.startMatch(
         { socketId: client.id, ...data },
@@ -100,6 +105,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         username: data.username,
         elo: data.elo,
       });
+      console.log(`[WS]   → queued (total=${this.waitingPlayers.length}): ${this.waitingPlayers.map(p => `${p.username}(${p.elo})`).join(', ')}`);
       client.emit('match:waiting');
     }
   }
@@ -170,6 +176,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private async startMatch(playerA: WaitingPlayer, playerB: WaitingPlayer) {
     const match = await this.matchesService.createMatch(MatchType.ONE_VS_ONE);
+    console.log(`[WS] START MATCH ${match.id.slice(0, 8)}: ${playerA.username} vs ${playerB.username}`);
 
     // Mobile-də 100 sual var (quiz_questions.dart). Backend yalnız index-ləri seçir.
     const totalQuestions = 100;
