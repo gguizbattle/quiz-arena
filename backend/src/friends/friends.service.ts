@@ -6,13 +6,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../database/entities/user.entity';
 import { Friendship, FriendshipStatus } from '../database/entities/friendship.entity';
+import { RealtimeGateway } from '../websocket/realtime.gateway';
 
 @Injectable()
 export class FriendsService {
   constructor(
     @InjectRepository(User) private users: Repository<User>,
     @InjectRepository(Friendship) private friendships: Repository<Friendship>,
+    private realtime: RealtimeGateway,
   ) {}
+
+  /** Hər iki tərəfə "siyahını yenilə" sinyalı göndər. */
+  private notifyBoth(userA: string, userB: string) {
+    this.realtime.pushToUser(userA, 'friends:changed', { at: Date.now() });
+    this.realtime.pushToUser(userB, 'friends:changed', { at: Date.now() });
+  }
 
   /// İstifadəçinin profilini friend_code ilə tap (özünü hesab tapsa belə qaytarır).
   async findByCode(code: string) {
@@ -58,6 +66,7 @@ export class FriendsService {
         if (existing.requester_id === target.id && existing.addressee_id === requesterId) {
           existing.status = 'accepted';
           await this.friendships.save(existing);
+          this.notifyBoth(requesterId, target.id);
           return { id: existing.id, status: 'accepted' as FriendshipStatus };
         }
         throw new ConflictException('already_pending');
@@ -70,6 +79,7 @@ export class FriendsService {
       status: 'pending',
     });
     const saved = await this.friendships.save(created);
+    this.notifyBoth(requesterId, target.id);
     return { id: saved.id, status: saved.status };
   }
 
@@ -81,6 +91,7 @@ export class FriendsService {
     if (f.status !== 'pending') throw new BadRequestException('not_pending');
     f.status = 'accepted';
     await this.friendships.save(f);
+    this.notifyBoth(f.requester_id, f.addressee_id);
     return { id: f.id, status: f.status };
   }
 
@@ -91,7 +102,10 @@ export class FriendsService {
     if (f.requester_id !== myId && f.addressee_id !== myId) {
       throw new ForbiddenException('not_yours');
     }
+    const a = f.requester_id;
+    const b = f.addressee_id;
     await this.friendships.delete(f.id);
+    this.notifyBoth(a, b);
     return { ok: true };
   }
 
@@ -122,6 +136,7 @@ export class FriendsService {
       f.status = 'blocked';
     }
     await this.friendships.save(f);
+    this.notifyBoth(f.requester_id, f.addressee_id);
     return { id: f.id, status: f.status };
   }
 
@@ -131,7 +146,10 @@ export class FriendsService {
     if (!f) throw new NotFoundException('friendship_not_found');
     if (f.status !== 'blocked') throw new BadRequestException('not_blocked');
     if (f.requester_id !== myId) throw new ForbiddenException('only_blocker_can_unblock');
+    const a = f.requester_id;
+    const b = f.addressee_id;
     await this.friendships.delete(f.id);
+    this.notifyBoth(a, b);
     return { ok: true };
   }
 

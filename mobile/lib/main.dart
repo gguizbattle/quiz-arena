@@ -8,6 +8,7 @@ import 'core/constants/api_constants.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/locale_provider.dart';
+import 'core/realtime/realtime_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,9 @@ class GguizBattleApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Realtime servisi auth + profile dəyişikliklərinə avtomatik abunədir.
+    // Build-də watch etməklə provider tree-də canlı qalır.
+    ref.watch(realtimeServiceProvider);
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
     return MaterialApp.router(
