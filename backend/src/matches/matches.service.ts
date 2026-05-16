@@ -32,13 +32,54 @@ export class MatchesService {
     return this.matchesRepo.save(match);
   }
 
+  /**
+   * Profil ekranı üçün son 20 matçı qaytarır. Hər matçda:
+   * - özünün score-u
+   * - rəqibin username + score (1v1 üçün; bot/solo üçün rəqib null)
+   * - matçın nəticəsi (win/loss/draw)
+   * - matchın tipi və bitmə vaxtı
+   */
   async getUserMatches(userId: string) {
-    return this.playersRepo.find({
+    const myEntries = await this.playersRepo.find({
       where: { user: { id: userId } },
-      relations: ['match'],
+      relations: ['match', 'match.winner'],
       order: { match: { started_at: 'DESC' } },
       take: 20,
     });
+
+    const result: any[] = [];
+    for (const me of myEntries) {
+      // Match-ın bütün oyunçularını al (rəqibi tapmaq üçün)
+      const allPlayers = await this.playersRepo.find({
+        where: { match: { id: me.match.id } },
+        relations: ['user'],
+      });
+      const opponent = allPlayers.find(p => p.user.id !== userId);
+      const winnerId = me.match.winner?.id ?? null;
+      let outcome: 'win' | 'loss' | 'draw' | 'solo' = 'solo';
+      if (me.match.type === '1v1' && winnerId !== null) {
+        outcome = winnerId === userId ? 'win' : 'loss';
+      } else if (me.match.type === '1v1' && winnerId === null && me.match.status === 'finished') {
+        outcome = 'draw';
+      }
+      result.push({
+        matchId: me.match.id,
+        type: me.match.type,
+        status: me.match.status,
+        startedAt: me.match.started_at,
+        endedAt: me.match.ended_at,
+        outcome,
+        myScore: me.score,
+        myCorrect: me.correct_answers,
+        opponent: opponent ? {
+          userId: opponent.user.id,
+          username: opponent.user.username,
+          score: opponent.score,
+          correctAnswers: opponent.correct_answers,
+        } : null,
+      });
+    }
+    return result;
   }
 
   async finishOneVsOne(
