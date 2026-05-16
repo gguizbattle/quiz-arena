@@ -12,6 +12,7 @@ interface WaitingPlayer {
   userId: string;
   username: string;
   elo: number;
+  friendCode: string;
   joinedAt: number; // ms timestamp — ELO toleransını vaxt keçdikcə genişlətmək üçün
 }
 
@@ -35,7 +36,7 @@ function eloToleranceFor(waitingMs: number): number {
 
 interface ActiveMatch {
   matchId: string;
-  players: { socketId: string; userId: string; username: string; elo: number }[];
+  players: { socketId: string; userId: string; username: string; elo: number; friendCode: string }[];
   questions: any[];
   results: Map<string, PlayerResult>;
 }
@@ -105,7 +106,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('match:join')
   async handleJoinQueue(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { userId: string; username: string; elo: number },
+    @MessageBody() data: { userId: string; username: string; elo: number; friendCode?: string },
   ) {
     console.log(`[WS] match:join ← ${data.username} (id=${data.userId.slice(0, 8)}, elo=${data.elo}, sock=${client.id})`);
     console.log(`[WS]   queue=${this.waitingPlayers.length}, activeMatches=${this.activeMatches.size}`);
@@ -147,7 +148,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(`[WS]   → MATCH FOUND vs ${opponent.username} (elo diff=${Math.abs(opponent.elo - data.elo)}, waited ${Math.round((now - opponent.joinedAt) / 1000)}s)`);
       this.waitingPlayers = this.waitingPlayers.filter(p => p.userId !== opponent.userId);
       await this.startMatch(
-        { socketId: client.id, ...data, joinedAt: now },
+        {
+          socketId: client.id,
+          userId: data.userId,
+          username: data.username,
+          elo: data.elo,
+          friendCode: data.friendCode ?? '',
+          joinedAt: now,
+        },
         opponent,
       );
     } else {
@@ -156,6 +164,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
         userId: data.userId,
         username: data.username,
         elo: data.elo,
+        friendCode: data.friendCode ?? '',
         joinedAt: now,
       });
       console.log(`[WS]   → queued (total=${this.waitingPlayers.length}): ${this.waitingPlayers.map(p => `${p.username}(${p.elo})`).join(', ')}`);
@@ -257,8 +266,18 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
       matchId: match.id,
       questionIndices: indices,
       opponents: {
-        [playerA.userId]: { username: playerB.username, elo: playerB.elo },
-        [playerB.userId]: { username: playerA.username, elo: playerA.elo },
+        [playerA.userId]: {
+          userId: playerB.userId,
+          username: playerB.username,
+          elo: playerB.elo,
+          friendCode: playerB.friendCode,
+        },
+        [playerB.userId]: {
+          userId: playerA.userId,
+          username: playerA.username,
+          elo: playerA.elo,
+          friendCode: playerA.friendCode,
+        },
       },
     });
   }
