@@ -101,6 +101,28 @@ export class DbBootstrapService implements OnModuleInit {
          FOR EACH ROW EXECUTE FUNCTION public.handle_new_user()`,
       );
 
+      // 7) xp → level auto-compute trigger. Supabase Studio-dan adminin XP-ni
+      // dəyişməsi level-i də avtomatik yeniləsin (manual SQL tələb olunmasın).
+      // Quadratic curve: N = floor((1 + sqrt(1 + 8*xp/1000))/2), capped at [1, 100].
+      await this.ds.query(`
+        CREATE OR REPLACE FUNCTION public.compute_level_from_xp()
+        RETURNS TRIGGER LANGUAGE plpgsql AS $$
+        BEGIN
+          IF NEW.xp IS DISTINCT FROM OLD.xp THEN
+            NEW.level := LEAST(100, GREATEST(1,
+              FLOOR((1 + SQRT(1 + 8 * NEW.xp / 1000.0)) / 2)::int
+            ));
+          END IF;
+          RETURN NEW;
+        END;
+        $$;
+      `);
+      await this.ds.query(`DROP TRIGGER IF EXISTS auto_compute_level ON public.users`);
+      await this.ds.query(
+        `CREATE TRIGGER auto_compute_level BEFORE UPDATE ON public.users
+         FOR EACH ROW EXECUTE FUNCTION public.compute_level_from_xp()`,
+      );
+
       this.log.log('DB bootstrap: FK + trigger reinstalled idempotently');
     } catch (e) {
       this.log.error('DB bootstrap failed', e as Error);
