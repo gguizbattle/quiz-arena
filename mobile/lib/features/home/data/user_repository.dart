@@ -16,6 +16,7 @@ class UserProfile {
   final int losses;
   final bool isPremium;
   final bool usernameSet;
+  final String friendCode;
 
   const UserProfile({
     required this.id,
@@ -30,6 +31,7 @@ class UserProfile {
     required this.losses,
     required this.isPremium,
     required this.usernameSet,
+    required this.friendCode,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> j) => UserProfile(
@@ -45,6 +47,7 @@ class UserProfile {
         losses: (j['losses'] as num).toInt(),
         isPremium: j['is_premium'] as bool? ?? false,
         usernameSet: j['username_set'] as bool? ?? true,
+        friendCode: (j['friend_code'] as String?) ?? '',
       );
 
   factory UserProfile.offline({required String username, String? email}) =>
@@ -61,6 +64,7 @@ class UserProfile {
         losses: 0,
         isPremium: false,
         usernameSet: true,
+        friendCode: '',
       );
 
   int get totalGames => wins + losses;

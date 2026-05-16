@@ -64,6 +64,10 @@ export class User {
   @Column({ nullable: true, type: 'text' })
   refresh_token: string | null;
 
+  @Index({ unique: true })
+  @Column({ length: 6 })
+  friend_code: string;
+
   @CreateDateColumn()
   created_at: Date;
 }

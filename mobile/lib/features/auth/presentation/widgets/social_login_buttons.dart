@@ -26,10 +26,13 @@ class _SocialLoginButtonsState extends ConsumerState<SocialLoginButtons> {
   Future<void> _run(Future<AuthErrorCode> Function() flow) async {
     if (_busy) return;
     setState(() => _busy = true);
+    debugPrint('[social_login] flow started');
     final code = await flow();
+    debugPrint('[social_login] flow returned code=$code');
     if (!mounted) return;
     setState(() => _busy = false);
     if (code == AuthErrorCode.none) {
+      debugPrint('[social_login] navigating to /home');
       context.go('/home');
       return;
     }

@@ -8,12 +8,14 @@ import { MatchesModule } from './matches/matches.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { WebsocketModule } from './websocket/websocket.module';
 import { AdminModule } from './admin/admin.module';
+import { FriendsModule } from './friends/friends.module';
 import { User } from './database/entities/user.entity';
 import { Category } from './database/entities/category.entity';
 import { Question } from './database/entities/question.entity';
 import { Match } from './database/entities/match.entity';
 import { MatchPlayer } from './database/entities/match-player.entity';
 import { Leaderboard } from './database/entities/leaderboard.entity';
+import { Friendship } from './database/entities/friendship.entity';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { Leaderboard } from './database/entities/leaderboard.entity';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         let dbUrl = config.get<string>('DATABASE_URL');
-        const entities = [User, Category, Question, Match, MatchPlayer, Leaderboard];
+        const entities = [User, Category, Question, Match, MatchPlayer, Leaderboard, Friendship];
         if (dbUrl) {
           // Supabase: pooler 6543 (transaction) → 5432 (session) for DDL/synchronize
           dbUrl = dbUrl.replace(':6543/', ':5432/');
@@ -53,6 +55,7 @@ import { Leaderboard } from './database/entities/leaderboard.entity';
     QuestionsModule,
     MatchesModule,
     LeaderboardModule,
+    FriendsModule,
     WebsocketModule,
     AdminModule,
   ],

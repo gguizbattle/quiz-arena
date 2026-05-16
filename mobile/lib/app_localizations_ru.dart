@@ -447,6 +447,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String blockedTab(int count) {
+    return 'Заблокированные ($count)';
+  }
+
+  @override
   String get onlineStatus => 'В сети';
 
   @override
@@ -454,6 +459,126 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get challengeButton => 'Вызов';
+
+  @override
+  String get addFriendTitle => 'Добавить друга';
+
+  @override
+  String get addFriendHint => 'Введите ID-код друга';
+
+  @override
+  String get addFriendButton => 'Отправить запрос';
+
+  @override
+  String get yourFriendCode => 'Твой ID-код';
+
+  @override
+  String get copyCodeAction => 'Копировать';
+
+  @override
+  String get codeCopied => 'Код скопирован';
+
+  @override
+  String get shareCodeHint => 'Поделись этим кодом с друзьями';
+
+  @override
+  String get friendCodeFormatError => 'Код должен содержать 6 символов';
+
+  @override
+  String get friendRequestSent => 'Запрос отправлен';
+
+  @override
+  String get friendRequestAccepted => 'Запрос принят';
+
+  @override
+  String get friendRemoved => 'Друг удалён';
+
+  @override
+  String get friendBlocked => 'Пользователь заблокирован';
+
+  @override
+  String get friendUnblocked => 'Разблокирован';
+
+  @override
+  String get noFriendsYet => 'Пока нет друзей';
+
+  @override
+  String get noFriendsHint => 'Нажми кнопку выше и введи ID-код';
+
+  @override
+  String get noRequestsYet => 'Новых запросов нет';
+
+  @override
+  String get noBlockedYet => 'Нет заблокированных';
+
+  @override
+  String get incomingRequests => 'Входящие';
+
+  @override
+  String get outgoingRequests => 'Исходящие';
+
+  @override
+  String get errorAlreadyFriends => 'Уже в друзьях';
+
+  @override
+  String get errorAlreadyPending => 'Запрос уже отправлен';
+
+  @override
+  String get errorBlocked => 'Этот пользователь вас заблокировал';
+
+  @override
+  String get errorCannotFriendSelf => 'Нельзя добавить себя';
+
+  @override
+  String get errorUserNotFound => 'Пользователь с таким кодом не найден';
+
+  @override
+  String get errorInvalidCodeFormat => 'Неверный формат кода';
+
+  @override
+  String get acceptAction => 'Принять';
+
+  @override
+  String get declineAction => 'Отклонить';
+
+  @override
+  String get removeFriendAction => 'Удалить';
+
+  @override
+  String get blockAction => 'Блокировать';
+
+  @override
+  String get unblockAction => 'Разблокировать';
+
+  @override
+  String get messageAction => 'Сообщение';
+
+  @override
+  String get cancelAction => 'Отмена';
+
+  @override
+  String get chatTitle => 'Чат';
+
+  @override
+  String get chatInputHint => 'Напиши сообщение...';
+
+  @override
+  String get chatSendButton => 'Отправить';
+
+  @override
+  String get chatPeerLeft => 'Собеседник вышел';
+
+  @override
+  String get chatPeerTyping => 'печатает...';
+
+  @override
+  String get chatEphemeralNotice => 'Сообщения удаляются при закрытии чата';
+
+  @override
+  String get chatNoMessages => 'Пока нет сообщений';
+
+  @override
+  String get chatNotFriends => 'Можно общаться только с друзьями';
 
   @override
   String get shopTitle => 'Магазин';

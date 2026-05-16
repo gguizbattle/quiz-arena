@@ -912,6 +912,12 @@ abstract class AppLocalizations {
   /// **'Sorğular ({count})'**
   String requestsTab(int count);
 
+  /// No description provided for @blockedTab.
+  ///
+  /// In az, this message translates to:
+  /// **'Bloklananlar ({count})'**
+  String blockedTab(int count);
+
   /// No description provided for @onlineStatus.
   ///
   /// In az, this message translates to:
@@ -929,6 +935,246 @@ abstract class AppLocalizations {
   /// In az, this message translates to:
   /// **'Çağırış'**
   String get challengeButton;
+
+  /// No description provided for @addFriendTitle.
+  ///
+  /// In az, this message translates to:
+  /// **'Dost Əlavə Et'**
+  String get addFriendTitle;
+
+  /// No description provided for @addFriendHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Dostunun ID kodunu daxil et'**
+  String get addFriendHint;
+
+  /// No description provided for @addFriendButton.
+  ///
+  /// In az, this message translates to:
+  /// **'Sorğu Göndər'**
+  String get addFriendButton;
+
+  /// No description provided for @yourFriendCode.
+  ///
+  /// In az, this message translates to:
+  /// **'Sənin ID kodun'**
+  String get yourFriendCode;
+
+  /// No description provided for @copyCodeAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Kopyala'**
+  String get copyCodeAction;
+
+  /// No description provided for @codeCopied.
+  ///
+  /// In az, this message translates to:
+  /// **'Kod kopyalandı'**
+  String get codeCopied;
+
+  /// No description provided for @shareCodeHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Bu kodu dostlarınla paylaş'**
+  String get shareCodeHint;
+
+  /// No description provided for @friendCodeFormatError.
+  ///
+  /// In az, this message translates to:
+  /// **'Kod 6 simvol olmalıdır'**
+  String get friendCodeFormatError;
+
+  /// No description provided for @friendRequestSent.
+  ///
+  /// In az, this message translates to:
+  /// **'Sorğu göndərildi'**
+  String get friendRequestSent;
+
+  /// No description provided for @friendRequestAccepted.
+  ///
+  /// In az, this message translates to:
+  /// **'Sorğu qəbul edildi'**
+  String get friendRequestAccepted;
+
+  /// No description provided for @friendRemoved.
+  ///
+  /// In az, this message translates to:
+  /// **'Dost siyahıdan silindi'**
+  String get friendRemoved;
+
+  /// No description provided for @friendBlocked.
+  ///
+  /// In az, this message translates to:
+  /// **'İstifadəçi bloklandı'**
+  String get friendBlocked;
+
+  /// No description provided for @friendUnblocked.
+  ///
+  /// In az, this message translates to:
+  /// **'Blokdan çıxarıldı'**
+  String get friendUnblocked;
+
+  /// No description provided for @noFriendsYet.
+  ///
+  /// In az, this message translates to:
+  /// **'Hələ dostun yoxdur'**
+  String get noFriendsYet;
+
+  /// No description provided for @noFriendsHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Yuxarıdakı düymə ilə ID kodu daxil et'**
+  String get noFriendsHint;
+
+  /// No description provided for @noRequestsYet.
+  ///
+  /// In az, this message translates to:
+  /// **'Yeni sorğu yoxdur'**
+  String get noRequestsYet;
+
+  /// No description provided for @noBlockedYet.
+  ///
+  /// In az, this message translates to:
+  /// **'Bloklanmış oyunçu yoxdur'**
+  String get noBlockedYet;
+
+  /// No description provided for @incomingRequests.
+  ///
+  /// In az, this message translates to:
+  /// **'Mənə gələn'**
+  String get incomingRequests;
+
+  /// No description provided for @outgoingRequests.
+  ///
+  /// In az, this message translates to:
+  /// **'Mənim göndərdiyim'**
+  String get outgoingRequests;
+
+  /// No description provided for @errorAlreadyFriends.
+  ///
+  /// In az, this message translates to:
+  /// **'Artıq dostsunuz'**
+  String get errorAlreadyFriends;
+
+  /// No description provided for @errorAlreadyPending.
+  ///
+  /// In az, this message translates to:
+  /// **'Sorğu artıq göndərilib'**
+  String get errorAlreadyPending;
+
+  /// No description provided for @errorBlocked.
+  ///
+  /// In az, this message translates to:
+  /// **'Bu istifadəçi sizi bloklayıb'**
+  String get errorBlocked;
+
+  /// No description provided for @errorCannotFriendSelf.
+  ///
+  /// In az, this message translates to:
+  /// **'Özünə sorğu göndərə bilməzsən'**
+  String get errorCannotFriendSelf;
+
+  /// No description provided for @errorUserNotFound.
+  ///
+  /// In az, this message translates to:
+  /// **'Bu kodla istifadəçi tapılmadı'**
+  String get errorUserNotFound;
+
+  /// No description provided for @errorInvalidCodeFormat.
+  ///
+  /// In az, this message translates to:
+  /// **'Yanlış kod formatı'**
+  String get errorInvalidCodeFormat;
+
+  /// No description provided for @acceptAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Qəbul et'**
+  String get acceptAction;
+
+  /// No description provided for @declineAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Rədd et'**
+  String get declineAction;
+
+  /// No description provided for @removeFriendAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Sil'**
+  String get removeFriendAction;
+
+  /// No description provided for @blockAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Bloklа'**
+  String get blockAction;
+
+  /// No description provided for @unblockAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Blokdan çıxar'**
+  String get unblockAction;
+
+  /// No description provided for @messageAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Mesaj'**
+  String get messageAction;
+
+  /// No description provided for @cancelAction.
+  ///
+  /// In az, this message translates to:
+  /// **'Ləğv et'**
+  String get cancelAction;
+
+  /// No description provided for @chatTitle.
+  ///
+  /// In az, this message translates to:
+  /// **'Mesajlaşma'**
+  String get chatTitle;
+
+  /// No description provided for @chatInputHint.
+  ///
+  /// In az, this message translates to:
+  /// **'Mesaj yaz...'**
+  String get chatInputHint;
+
+  /// No description provided for @chatSendButton.
+  ///
+  /// In az, this message translates to:
+  /// **'Göndər'**
+  String get chatSendButton;
+
+  /// No description provided for @chatPeerLeft.
+  ///
+  /// In az, this message translates to:
+  /// **'Söhbətdaş ayrıldı'**
+  String get chatPeerLeft;
+
+  /// No description provided for @chatPeerTyping.
+  ///
+  /// In az, this message translates to:
+  /// **'yazır...'**
+  String get chatPeerTyping;
+
+  /// No description provided for @chatEphemeralNotice.
+  ///
+  /// In az, this message translates to:
+  /// **'Mesajlar yazışmanı bağladıqda silinir'**
+  String get chatEphemeralNotice;
+
+  /// No description provided for @chatNoMessages.
+  ///
+  /// In az, this message translates to:
+  /// **'Hələ heç bir mesaj yoxdur'**
+  String get chatNoMessages;
+
+  /// No description provided for @chatNotFriends.
+  ///
+  /// In az, this message translates to:
+  /// **'Yalnız dostlarla mesajlaşa bilərsən'**
+  String get chatNotFriends;
 
   /// No description provided for @shopTitle.
   ///

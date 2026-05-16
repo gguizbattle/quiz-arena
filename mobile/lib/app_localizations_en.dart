@@ -447,6 +447,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String blockedTab(int count) {
+    return 'Blocked ($count)';
+  }
+
+  @override
   String get onlineStatus => 'Online';
 
   @override
@@ -454,6 +459,127 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengeButton => 'Challenge';
+
+  @override
+  String get addFriendTitle => 'Add Friend';
+
+  @override
+  String get addFriendHint => 'Enter your friend\'s ID code';
+
+  @override
+  String get addFriendButton => 'Send Request';
+
+  @override
+  String get yourFriendCode => 'Your ID code';
+
+  @override
+  String get copyCodeAction => 'Copy';
+
+  @override
+  String get codeCopied => 'Code copied';
+
+  @override
+  String get shareCodeHint => 'Share this code with your friends';
+
+  @override
+  String get friendCodeFormatError => 'Code must be 6 characters';
+
+  @override
+  String get friendRequestSent => 'Request sent';
+
+  @override
+  String get friendRequestAccepted => 'Request accepted';
+
+  @override
+  String get friendRemoved => 'Friend removed';
+
+  @override
+  String get friendBlocked => 'User blocked';
+
+  @override
+  String get friendUnblocked => 'Unblocked';
+
+  @override
+  String get noFriendsYet => 'No friends yet';
+
+  @override
+  String get noFriendsHint => 'Tap the button above to enter an ID code';
+
+  @override
+  String get noRequestsYet => 'No new requests';
+
+  @override
+  String get noBlockedYet => 'No blocked players';
+
+  @override
+  String get incomingRequests => 'Incoming';
+
+  @override
+  String get outgoingRequests => 'Sent by me';
+
+  @override
+  String get errorAlreadyFriends => 'Already friends';
+
+  @override
+  String get errorAlreadyPending => 'Request already sent';
+
+  @override
+  String get errorBlocked => 'This user has blocked you';
+
+  @override
+  String get errorCannotFriendSelf => 'You can\'t send a request to yourself';
+
+  @override
+  String get errorUserNotFound => 'No user found with this code';
+
+  @override
+  String get errorInvalidCodeFormat => 'Invalid code format';
+
+  @override
+  String get acceptAction => 'Accept';
+
+  @override
+  String get declineAction => 'Decline';
+
+  @override
+  String get removeFriendAction => 'Remove';
+
+  @override
+  String get blockAction => 'Block';
+
+  @override
+  String get unblockAction => 'Unblock';
+
+  @override
+  String get messageAction => 'Message';
+
+  @override
+  String get cancelAction => 'Cancel';
+
+  @override
+  String get chatTitle => 'Chat';
+
+  @override
+  String get chatInputHint => 'Type a message...';
+
+  @override
+  String get chatSendButton => 'Send';
+
+  @override
+  String get chatPeerLeft => 'Peer left';
+
+  @override
+  String get chatPeerTyping => 'typing...';
+
+  @override
+  String get chatEphemeralNotice =>
+      'Messages disappear when you close the chat';
+
+  @override
+  String get chatNoMessages => 'No messages yet';
+
+  @override
+  String get chatNotFriends => 'You can only chat with friends';
 
   @override
   String get shopTitle => 'Shop';

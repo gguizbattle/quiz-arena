@@ -1,9 +1,9 @@
 class ApiConstants {
   ApiConstants._();
 
-  /// Public Railway backend URL.
-  static const String backendUrl = 'https://quiz-arena-backend-production.up.railway.app';
-  static const String wsUrl = 'wss://quiz-arena-backend-production.up.railway.app';
+  /// Public Railway backend URL (yeni Gmail hesabı altında, 2026-05-15).
+  static const String backendUrl = 'https://quiz-arena-backend-production-9a82.up.railway.app';
+  static const String wsUrl = 'wss://quiz-arena-backend-production-9a82.up.railway.app';
 
   static const String baseUrl = '$backendUrl/api/v1';
   static const String socketUrl = '$wsUrl/game';

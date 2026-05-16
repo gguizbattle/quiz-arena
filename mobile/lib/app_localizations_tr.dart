@@ -447,6 +447,11 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String blockedTab(int count) {
+    return 'Engellenenler ($count)';
+  }
+
+  @override
   String get onlineStatus => 'Çevrimiçi';
 
   @override
@@ -454,6 +459,126 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get challengeButton => 'Meydan Oku';
+
+  @override
+  String get addFriendTitle => 'Arkadaş Ekle';
+
+  @override
+  String get addFriendHint => 'Arkadaşının ID kodunu gir';
+
+  @override
+  String get addFriendButton => 'İstek Gönder';
+
+  @override
+  String get yourFriendCode => 'ID kodun';
+
+  @override
+  String get copyCodeAction => 'Kopyala';
+
+  @override
+  String get codeCopied => 'Kod kopyalandı';
+
+  @override
+  String get shareCodeHint => 'Bu kodu arkadaşlarınla paylaş';
+
+  @override
+  String get friendCodeFormatError => 'Kod 6 karakter olmalı';
+
+  @override
+  String get friendRequestSent => 'İstek gönderildi';
+
+  @override
+  String get friendRequestAccepted => 'İstek kabul edildi';
+
+  @override
+  String get friendRemoved => 'Arkadaş silindi';
+
+  @override
+  String get friendBlocked => 'Kullanıcı engellendi';
+
+  @override
+  String get friendUnblocked => 'Engel kaldırıldı';
+
+  @override
+  String get noFriendsYet => 'Henüz arkadaşın yok';
+
+  @override
+  String get noFriendsHint => 'Yukarıdaki düğme ile ID kodu gir';
+
+  @override
+  String get noRequestsYet => 'Yeni istek yok';
+
+  @override
+  String get noBlockedYet => 'Engelli oyuncu yok';
+
+  @override
+  String get incomingRequests => 'Gelen';
+
+  @override
+  String get outgoingRequests => 'Gönderdiklerim';
+
+  @override
+  String get errorAlreadyFriends => 'Zaten arkadaşsınız';
+
+  @override
+  String get errorAlreadyPending => 'İstek zaten gönderildi';
+
+  @override
+  String get errorBlocked => 'Bu kullanıcı sizi engellemiş';
+
+  @override
+  String get errorCannotFriendSelf => 'Kendine istek gönderemezsin';
+
+  @override
+  String get errorUserNotFound => 'Bu kod ile kullanıcı bulunamadı';
+
+  @override
+  String get errorInvalidCodeFormat => 'Geçersiz kod formatı';
+
+  @override
+  String get acceptAction => 'Kabul Et';
+
+  @override
+  String get declineAction => 'Reddet';
+
+  @override
+  String get removeFriendAction => 'Sil';
+
+  @override
+  String get blockAction => 'Engelle';
+
+  @override
+  String get unblockAction => 'Engeli Kaldır';
+
+  @override
+  String get messageAction => 'Mesaj';
+
+  @override
+  String get cancelAction => 'İptal';
+
+  @override
+  String get chatTitle => 'Sohbet';
+
+  @override
+  String get chatInputHint => 'Mesaj yaz...';
+
+  @override
+  String get chatSendButton => 'Gönder';
+
+  @override
+  String get chatPeerLeft => 'Karşı taraf ayrıldı';
+
+  @override
+  String get chatPeerTyping => 'yazıyor...';
+
+  @override
+  String get chatEphemeralNotice => 'Sohbeti kapattığında mesajlar silinir';
+
+  @override
+  String get chatNoMessages => 'Henüz mesaj yok';
+
+  @override
+  String get chatNotFriends => 'Sadece arkadaşlarla sohbet edebilirsin';
 
   @override
   String get shopTitle => 'Mağaza';

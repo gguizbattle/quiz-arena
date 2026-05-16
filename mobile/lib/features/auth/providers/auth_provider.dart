@@ -126,10 +126,12 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
         state = AsyncData(const AuthState(status: AuthStatus.unauthenticated, errorCode: AuthErrorCode.generic));
         return AuthErrorCode.generic;
       }
+      debugPrint('[auth.google] Supabase signInWithIdToken çağırılır...');
       final res = await ref.read(authRepositoryProvider).signInWithGoogleIdToken(
             idToken: idToken,
             accessToken: accessToken,
           );
+      debugPrint('[auth.google] Supabase OK — user.id=${res.user?.id}, email=${res.user?.email}');
       state = AsyncData(AuthState(
         status: AuthStatus.authenticated,
         username: (res.user?.userMetadata?['username'] as String?) ?? res.user?.email,
