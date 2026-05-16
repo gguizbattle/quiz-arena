@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'api_endpoints.dart';
 
@@ -31,11 +32,19 @@ class _SupabaseAuthInterceptor extends QueuedInterceptorsWrapper {
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+    debugPrint('[http] → ${options.method} ${options.path}');
     handler.next(options);
   }
 
   @override
+  Future<void> onResponse(Response response, ResponseInterceptorHandler handler) async {
+    debugPrint('[http] ← ${response.statusCode} ${response.requestOptions.path}');
+    handler.next(response);
+  }
+
+  @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
+    debugPrint('[http] ✗ ${err.response?.statusCode} ${err.requestOptions.path}: ${err.response?.data}');
     if (err.response?.statusCode == 401) {
       try {
         await _supabase.auth.refreshSession();

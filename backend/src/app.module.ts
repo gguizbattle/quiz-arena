@@ -16,6 +16,7 @@ import { Match } from './database/entities/match.entity';
 import { MatchPlayer } from './database/entities/match-player.entity';
 import { Leaderboard } from './database/entities/leaderboard.entity';
 import { Friendship } from './database/entities/friendship.entity';
+import { DbBootstrapService } from './database/db-bootstrap.service';
 
 @Module({
   imports: [
@@ -59,5 +60,6 @@ import { Friendship } from './database/entities/friendship.entity';
     WebsocketModule,
     AdminModule,
   ],
+  providers: [DbBootstrapService],
 })
 export class AppModule {}
